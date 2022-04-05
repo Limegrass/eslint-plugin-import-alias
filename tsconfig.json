@@ -1,14 +1,14 @@
 {
-    "exclude": ["node_modules/*", "public/*"],
-    "include": ["src/**/*.ts"],
+    "exclude": ["node_modules/*"],
+    "include": ["src/**/*.ts", "tests/**/*.ts"],
     "compilerOptions": {
+        "lib": ["es2015"],
         "baseUrl": ".",
         "declaration": true,
         "esModuleInterop": true,
         "outDir": "./build",
         "paths": {
-            "#src/*": ["src/*"],
-            "#root/*": ["*"]
+            "#src/*": ["src/*"]
         },
         "resolveJsonModule": true,
         "strictNullChecks": true

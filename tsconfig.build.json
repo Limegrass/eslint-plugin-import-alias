@@ -1,0 +1,4 @@
+{
+    "exclude": ["tests"],
+    "extends": "./tsconfig.json"
+}
