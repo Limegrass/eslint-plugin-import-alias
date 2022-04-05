@@ -15,7 +15,7 @@ Encourage use of defined aliases in TSConfig/JSConfig through ESLint.
 ## Install
 
 ```shell
-npm install --save-dev eslint-plugin-import-alias eslint
+npm install --save-dev @limegrass/eslint-plugin-import-alias eslint
 ```
 
 This plugin relies on an alias configuration in `tsconfig.json`, `jsconfig.json`,
@@ -30,12 +30,13 @@ Check the [rules documentation][docs-import-alias] for further configuration.
 ```jsonc
 // .eslintrc
 {
+    "plugins": ["@limegrass/import-alias"],
     "rules": {
-        "self/import-alias": "error"
+        "@limegrass/import-alias/import-alias": "error"
     }
 }
 ```
 
 This configuration is also turned on automatically if you extend `eslint:recommended`.
 
-[docs-import-alias]: (docs/rules/import-alias.md)
+[docs-import-alias]: docs/rules/import-alias.md

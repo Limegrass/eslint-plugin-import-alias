@@ -52,7 +52,7 @@ parameter of a function named `potato` for aliasing.
     // ...
     "rules": {
         // ...
-        "self/import-alias": [
+        "@limegrass/import-alias/import-alias": [
             "error",
             {
                 "aliasImportFunctions": ["require", "mock", "potato"]
