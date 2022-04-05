@@ -8,6 +8,9 @@
         "test": "jest",
         "coverage": "jest --coverage"
     },
+    "files": [
+        "build"
+    ],
     "imports": {
         "#src/*": "./build/*.js"
     },
@@ -54,7 +57,7 @@
         "type": "git"
     },
     "name": "@limegrass/eslint-plugin-import-alias",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Rewrite imports to TSConfig aliases",
     "author": "Limegrass",
     "license": "MIT"
