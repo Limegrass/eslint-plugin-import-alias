@@ -133,7 +133,8 @@ const importAliasRule: Rule.RuleModule = {
                     context.report({
                         node,
                         message:
-                            "a filepath must be provided, try with --stdin-filename or call eslint on a file",
+                            "a filepath must be provided, try with --stdin-filename, " +
+                            "call eslint on a file, or save your buffer as a file.",
                     });
                 },
             };
