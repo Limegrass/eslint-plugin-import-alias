@@ -25,6 +25,12 @@ beforeEach(() => {
             },
         },
         {
+            alias: "#src-test",
+            path: {
+                absolute: `${cwd}/src`,
+            },
+        },
+        {
             alias: "#rules",
             path: {
                 absolute: `${cwd}/src/rules`,
@@ -47,6 +53,12 @@ ruleTester.run("ImportDeclaration", rules["import-alias"], {
         // does not apply for partial path match
         {
             code: `import { Potato } from '../src-app/rules/potato';`,
+            filename: "src/test.ts",
+        },
+        // selects correct alias despite #src being a partial match
+        // and comes first/is shorter as an alias
+        {
+            code: `import { Potato } from '../src-test/rules/potato';`,
             filename: "src/test.ts",
         },
     ],
@@ -99,6 +111,12 @@ describe("CallExpression", () => {
                 code: `require('../src-app/rules/potato')`,
                 filename: "src/test.ts",
             },
+            // selects correct alias despite #src being a partial match
+            // and comes first/is shorter as an alias
+            {
+                code: `require('../src-test/rules/potato')`,
+                filename: "src/test.ts",
+            },
         ],
         invalid: [
             // more specific alias
@@ -146,6 +164,12 @@ describe("CallExpression", () => {
             // does not apply for partial path match
             {
                 code: `jest.mock('../src-app/rules/potato')`,
+                filename: "src/test.ts",
+            },
+            // selects correct alias despite #src being a partial match
+            // and comes first/is shorter as an alias
+            {
+                code: `jest.mock('../src-test/rules/potato')`,
                 filename: "src/test.ts",
             },
         ],
@@ -200,6 +224,12 @@ describe("CallExpression", () => {
                 // does not apply for partial path match
                 {
                     code: `potato('../src-app/rules/potato');`,
+                    filename: "src/test.ts",
+                },
+                // selects correct alias despite #src being a partial match
+                // and comes first/is shorter as an alias
+                {
+                    code: `potato('../src-test/rules/potato')`,
                     filename: "src/test.ts",
                 },
             ],
