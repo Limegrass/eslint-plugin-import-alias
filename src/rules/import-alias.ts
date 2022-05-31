@@ -49,9 +49,15 @@ function getBestAliasConfig(
     currentAlias: AliasConfig | undefined,
     absoluteModulePath: string
 ) {
+    const importPathParts = absoluteModulePath.split("/");
     return aliasConfigs.reduce((currentBest, potentialAlias) => {
-        const isValidAlias =
-            absoluteModulePath.indexOf(potentialAlias.path.absolute) >= 0;
+        const aliasPathParts = potentialAlias.path.absolute.split("/");
+        const isValidAlias = aliasPathParts.reduce(
+            (isValid, aliasPathPart, index) => {
+                return isValid && importPathParts[index] === aliasPathPart;
+            },
+            true
+        );
         const isMoreSpecificAlias =
             !currentBest ||
             potentialAlias.path.absolute.length >

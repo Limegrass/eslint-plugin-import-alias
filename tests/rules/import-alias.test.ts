@@ -44,6 +44,11 @@ ruleTester.run("ImportDeclaration", rules["import-alias"], {
             code: `import { Potato } from '#rules/potato';`,
             filename: "src/test.ts",
         },
+        // does not apply for partial path match
+        {
+            code: `import { Potato } from '../src-app/rules/potato';`,
+            filename: "src/test.ts",
+        },
     ],
     invalid: [
         // more specific alias
@@ -89,6 +94,11 @@ describe("CallExpression", () => {
                 code: `require("#rules/potato")`,
                 filename: "src/test.ts",
             },
+            // does not apply for partial path match
+            {
+                code: `require('../src-app/rules/potato')`,
+                filename: "src/test.ts",
+            },
         ],
         invalid: [
             // more specific alias
@@ -131,6 +141,11 @@ describe("CallExpression", () => {
             },
             {
                 code: `jest.mock("#rules/potato")`,
+                filename: "src/test.ts",
+            },
+            // does not apply for partial path match
+            {
+                code: `jest.mock('../src-app/rules/potato')`,
                 filename: "src/test.ts",
             },
         ],
@@ -181,6 +196,11 @@ describe("CallExpression", () => {
                     code: `potato("#rules/potato")`,
                     filename: "src/test.ts",
                     options: [{ aliasImportFunctions: ["potato"] }],
+                },
+                // does not apply for partial path match
+                {
+                    code: `potato('../src-app/rules/potato');`,
+                    filename: "src/test.ts",
                 },
             ],
             invalid: [
