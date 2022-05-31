@@ -146,7 +146,8 @@ const importAliasRule: Rule.RuleModule = {
                         node,
                         message:
                             "a filepath must be provided, try with --stdin-filename, " +
-                            "call eslint on a file, or save your buffer as a file.",
+                            "call eslint on a file, " +
+                            "or save your buffer as a file and restart eslint in your editor.",
                     });
                 },
             };
