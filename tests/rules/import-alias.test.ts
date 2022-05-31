@@ -39,6 +39,131 @@ beforeEach(() => {
     ]);
 });
 
+ruleTester.run("ExportAllDeclaration", rules["import-alias"], {
+    valid: [
+        // most specific aliases
+        {
+            code: `export * from '#src/potato';`,
+            filename: "src/test.ts",
+        },
+        {
+            code: `export * from '#rules/potato';`,
+            filename: "src/test.ts",
+        },
+        // does not apply for partial path match
+        {
+            code: `export * from '../src-app/rules/potato';`,
+            filename: "src/test.ts",
+        },
+        // selects correct alias despite #src being a partial match
+        // and comes first/is shorter as an alias
+        {
+            code: `export * from '../src-test/rules/potato';`,
+            filename: "src/test.ts",
+        },
+        // does not affect source-less exports
+        {
+            code: `export default TestFn = () => {}`,
+            filename: "src/test.ts",
+        },
+    ],
+    invalid: [
+        // more specific alias
+        {
+            code: `export * from '#src/rules/potato';`,
+            errors: 1,
+            filename: "src/test.ts",
+            output: "export * from '#rules/potato';",
+        },
+        // relative path with more specific alias
+        {
+            code: `export * from './rules/potato';`,
+            errors: 1,
+            filename: "src/test.ts",
+            output: "export * from '#rules/potato';",
+        },
+        // knows specific alias from path of current file
+        {
+            code: `export * from './potato';`,
+            errors: 1,
+            filename: "src/rules/test.ts",
+            output: "export * from '#rules/potato';",
+        },
+        // relative path backwards with more specific alias
+        {
+            code: `export * from '../src/rules/potato';`,
+            errors: 1,
+            filename: "src/test.ts",
+            output: "export * from '#rules/potato';",
+        },
+    ],
+});
+
+ruleTester.run("ExportNamedDeclaration", rules["import-alias"], {
+    valid: [
+        // most specific aliases
+        {
+            code: `export { Potato } from '#src/potato';`,
+            filename: "src/test.ts",
+        },
+        {
+            code: `export { Potato } from '#rules/potato';`,
+            filename: "src/test.ts",
+        },
+        // does not apply for partial path match
+        {
+            code: `export { Potato } from '../src-app/rules/potato';`,
+            filename: "src/test.ts",
+        },
+        // selects correct alias despite #src being a partial match
+        // and comes first/is shorter as an alias
+        {
+            code: `export { Potato } from '../src-test/rules/potato';`,
+            filename: "src/test.ts",
+        },
+        // does not affect source-less named exports
+        {
+            code: `export const TestFn = () => {}`,
+            filename: "src/test.ts",
+        },
+        // does not affect source-less named exports
+        {
+            code: `const TestFn = () => {}; export { TestFn };`,
+            filename: "src/test.ts",
+        },
+    ],
+    invalid: [
+        // more specific alias
+        {
+            code: `export { Potato } from '#src/rules/potato';`,
+            errors: 1,
+            filename: "src/test.ts",
+            output: "export { Potato } from '#rules/potato';",
+        },
+        // relative path with more specific alias
+        {
+            code: `export { Potato } from './rules/potato';`,
+            errors: 1,
+            filename: "src/test.ts",
+            output: "export { Potato } from '#rules/potato';",
+        },
+        // knows specific alias from path of current file
+        {
+            code: `export { Potato } from './potato';`,
+            errors: 1,
+            filename: "src/rules/test.ts",
+            output: "export { Potato } from '#rules/potato';",
+        },
+        // relative path backwards with more specific alias
+        {
+            code: `export { Potato } from '../src/rules/potato';`,
+            errors: 1,
+            filename: "src/test.ts",
+            output: "export { Potato } from '#rules/potato';",
+        },
+    ],
+});
+
 ruleTester.run("ImportDeclaration", rules["import-alias"], {
     valid: [
         // most specific aliases

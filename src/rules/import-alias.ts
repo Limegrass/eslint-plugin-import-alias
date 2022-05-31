@@ -1,5 +1,10 @@
 import { AliasConfig, loadAliasConfigs } from "#src/alias-config";
 import { AST, Rule } from "eslint";
+import type {
+    ExportAllDeclaration,
+    ExportNamedDeclaration,
+    ImportDeclaration,
+} from "estree";
 import { existsSync } from "fs-extra";
 import type { JSONSchema4 } from "json-schema";
 import { dirname, join as joinPath, resolve } from "path";
@@ -174,6 +179,24 @@ const importAliasRule: Rule.RuleModule = {
                 : undefined;
         };
 
+        const aliasModuleDeclarations = (
+            node:
+                | ImportDeclaration
+                | ExportAllDeclaration
+                | ExportNamedDeclaration
+        ) => {
+            if (node.source?.range && typeof node.source.value === "string") {
+                const suggestion = getReportDescriptor(
+                    node.source.range,
+                    node.source.value
+                );
+
+                if (suggestion) {
+                    context.report({ node, ...suggestion });
+                }
+            }
+        };
+
         return {
             CallExpression: (node) => {
                 const identifierNode =
@@ -203,21 +226,9 @@ const importAliasRule: Rule.RuleModule = {
                     }
                 }
             },
-            ImportDeclaration: (node) => {
-                if (
-                    node.source.range &&
-                    typeof node.source.value === "string"
-                ) {
-                    const suggestion = getReportDescriptor(
-                        node.source.range,
-                        node.source.value
-                    );
-
-                    if (suggestion) {
-                        context.report({ node, ...suggestion });
-                    }
-                }
-            },
+            ExportAllDeclaration: aliasModuleDeclarations,
+            ExportNamedDeclaration: aliasModuleDeclarations,
+            ImportDeclaration: aliasModuleDeclarations,
         };
     },
 };
