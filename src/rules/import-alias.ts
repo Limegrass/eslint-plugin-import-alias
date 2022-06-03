@@ -138,8 +138,9 @@ const importAliasRule: Rule.RuleModule = {
         }
 
         const filepath = resolve(context.getFilename());
+        const absoluteDir = dirname(filepath);
 
-        if (!existsSync(filepath)) {
+        if (!existsSync(absoluteDir)) {
             return {
                 Program: (node) => {
                     context.report({
@@ -153,7 +154,6 @@ const importAliasRule: Rule.RuleModule = {
             };
         }
 
-        const absoluteDir = dirname(filepath);
         const getReportDescriptor = (
             [moduleStart, moduleEnd]: [number, number],
             importModuleName: string
