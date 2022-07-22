@@ -7,7 +7,7 @@ import type {
 } from "estree";
 import { existsSync } from "fs-extra";
 import type { JSONSchema4 } from "json-schema";
-import { dirname, join as joinPath, resolve } from "path";
+import { dirname, join as joinPath, resolve, sep as pathSep } from "path";
 import slash from "slash";
 
 function getAliasSuggestion(
@@ -26,10 +26,9 @@ function getAliasSuggestion(
     if (importModuleName.trim().charAt(0) === ".") {
         absoluteModulePath = joinPath(absoluteDir, importModuleName);
     } else if (currentAliasConfig) {
-        absoluteModulePath = importModuleName.replace(
-            currentAliasConfig.alias,
-            currentAliasConfig.path.absolute
-        );
+        absoluteModulePath = importModuleName
+            .replace(currentAliasConfig.alias, currentAliasConfig.path.absolute)
+            .replace(/\//g, pathSep);
     }
 
     if (absoluteModulePath) {
@@ -55,9 +54,9 @@ function getBestAliasConfig(
     currentAlias: AliasConfig | undefined,
     absoluteModulePath: string
 ) {
-    const importPathParts = absoluteModulePath.split("/");
+    const importPathParts = absoluteModulePath.split(pathSep);
     return aliasConfigs.reduce((currentBest, potentialAlias) => {
-        const aliasPathParts = potentialAlias.path.absolute.split("/");
+        const aliasPathParts = potentialAlias.path.absolute.split(pathSep);
         const isValidAlias = aliasPathParts.reduce(
             (isValid, aliasPathPart, index) => {
                 return isValid && importPathParts[index] === aliasPathPart;
