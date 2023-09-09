@@ -128,7 +128,7 @@ const importAliasRule: Rule.RuleModule = {
         }: ImportAliasOptions = context.options[0] || {}; // No idea what the other array values are
 
         const aliasesResult = loadAliasConfigs(cwd, aliasConfigPath);
-        if ("message" in aliasesResult) {
+        if (aliasesResult instanceof Error) {
             return {
                 Program: (node) => {
                     context.report({ node, message: aliasesResult.message });
