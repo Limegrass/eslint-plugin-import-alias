@@ -90,6 +90,70 @@ function runTests(platform: "win32" | "posix") {
                 code: `export default TestFn = () => {}`,
                 filename: "src/test.ts",
             },
+
+            // relative path overridden for root and exports from sibling module
+            {
+                code: `export * from "./rules/potato";`,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: ".",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // relative path overridden for a specified directory and exports from sibling module
+            {
+                code: `export * from "./rules/potato";`,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // relative path overridden for root and exports from parent module
+            {
+                code: `export * from "../rules/potato";`,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: ".",
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // relative path overridden for a specified directory and exports from parent module
+            {
+                code: `export * from "../rules/potato";`,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src",
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
+            },
         ],
         invalid: [
             // more specific alias
@@ -119,6 +183,78 @@ function runTests(platform: "win32" | "posix") {
                 errors: 1,
                 filename: "src/test.ts",
                 output: "export * from '#rules/potato';",
+            },
+
+            // (root) relative export from parent when only depth of 0 (sibling) is allowed
+            {
+                code: `export * from "../potato";`,
+                errors: 1,
+                filename: "src/rules/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: ".",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+                output: `export * from "#src/potato";`,
+            },
+
+            // (specified) relative export from parent when only depth of 0 (sibling) is allowed
+            {
+                code: `export * from "../potato";`,
+                errors: 1,
+                filename: "src/rules/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+                output: `export * from "#src/potato";`,
+            },
+
+            // relative path used in file that does not fall within override
+            {
+                code: `export * from "./potato";`,
+                errors: 1,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src/rules",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+                output: `export * from "#src/potato";`,
+            },
+
+            // relative path used to too large of a depth
+            {
+                code: `export * from "../../potato";`,
+                errors: 1,
+                filename: "src/rules/foo/bar.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src",
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
+                output: `export * from "#src/potato";`,
             },
         ],
     });
@@ -155,6 +291,70 @@ function runTests(platform: "win32" | "posix") {
                 code: `const TestFn = () => {}; export { TestFn };`,
                 filename: "src/test.ts",
             },
+
+            // relative path overridden for root and exports from sibling module
+            {
+                code: `export { Potato } from "./rules/potato";`,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: ".",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // relative path overridden for a specified directory and exports from sibling module
+            {
+                code: `export { Potato } from "./rules/potato";`,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // relative path overridden for root and exports from parent module
+            {
+                code: `export { Potato } from "../rules/potato";`,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: ".",
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // relative path overridden for a specified directory and exports from parent module
+            {
+                code: `export { Potato } from "../rules/potato";`,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src",
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
+            },
         ],
         invalid: [
             // more specific alias
@@ -185,6 +385,78 @@ function runTests(platform: "win32" | "posix") {
                 filename: "src/test.ts",
                 output: "export { Potato } from '#rules/potato';",
             },
+
+            // (root) relative export from parent when only depth of 0 (sibling) is allowed
+            {
+                code: `export { Potato } from "../potato";`,
+                errors: 1,
+                filename: "src/rules/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: ".",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+                output: `export { Potato } from "#src/potato";`,
+            },
+
+            // (specified) relative export from parent when only depth of 0 (sibling) is allowed
+            {
+                code: `export { Potato } from "../potato";`,
+                errors: 1,
+                filename: "src/rules/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+                output: `export { Potato } from "#src/potato";`,
+            },
+
+            // relative path used in file that does not fall within override
+            {
+                code: `export { Potato } from "./potato";`,
+                errors: 1,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src/rules",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+                output: `export { Potato } from "#src/potato";`,
+            },
+
+            // relative path used to too large of a depth
+            {
+                code: `export { Potato } from "../../potato";`,
+                errors: 1,
+                filename: "src/rules/foo/bar.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src",
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
+                output: `export { Potato } from "#src/potato";`,
+            },
         ],
     });
 
@@ -209,6 +481,70 @@ function runTests(platform: "win32" | "posix") {
             {
                 code: `import { Potato } from '../src-test/rules/potato';`,
                 filename: "src/test.ts",
+            },
+
+            // relative path overridden for root and imports from sibling module
+            {
+                code: `import { Potato } from "./rules/potato";`,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: ".",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // relative path overridden for a specified directory and imports from sibling module
+            {
+                code: `import { Potato } from "./rules/potato";`,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // relative path overridden for root and imports from parent module
+            {
+                code: `import { Potato } from "../rules/potato";`,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: ".",
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // relative path overridden for a specified directory and imports from parent module
+            {
+                code: `import { Potato } from "../rules/potato";`,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src",
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
             },
         ],
         invalid: [
@@ -240,6 +576,78 @@ function runTests(platform: "win32" | "posix") {
                 filename: "src/test.ts",
                 output: "import { Potato } from '#rules/potato';",
             },
+
+            // (root) relative import from parent when only depth of 0 (sibling) is allowed
+            {
+                code: `import { Potato } from "../potato";`,
+                errors: 1,
+                filename: "src/rules/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: ".",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+                output: `import { Potato } from "#src/potato";`,
+            },
+
+            // (specified) relative import from parent when only depth of 0 (sibling) is allowed
+            {
+                code: `import { Potato } from "../potato";`,
+                errors: 1,
+                filename: "src/rules/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+                output: `import { Potato } from "#src/potato";`,
+            },
+
+            // relative path used in file that does not fall within override
+            {
+                code: `import { Potato } from "./potato";`,
+                errors: 1,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src/rules",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+                output: `import { Potato } from "#src/potato";`,
+            },
+
+            // relative path used to too large of a depth
+            {
+                code: `import { Potato } from "../../potato";`,
+                errors: 1,
+                filename: "src/rules/foo/bar.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src",
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
+                output: `import { Potato } from "#src/potato";`,
+            },
         ],
     });
 
@@ -265,6 +673,70 @@ function runTests(platform: "win32" | "posix") {
                 {
                     code: `require('../src-test/rules/potato')`,
                     filename: "src/test.ts",
+                },
+
+                // relative path overridden for root and imports from sibling module
+                {
+                    code: `require("./rules/potato")`,
+                    filename: "src/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: ".",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                },
+
+                // relative path overridden for a specified directory and imports from sibling module
+                {
+                    code: `require("./rules/potato")`,
+                    filename: "src/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: "src",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                },
+
+                // relative path overridden for root and imports from parent module
+                {
+                    code: `require("../rules/potato")`,
+                    filename: "src/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: ".",
+                                    depth: 1,
+                                },
+                            ],
+                        },
+                    ],
+                },
+
+                // relative path overridden for a specified directory and imports from parent module
+                {
+                    code: `require("../rules/potato")`,
+                    filename: "src/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: "src",
+                                    depth: 1,
+                                },
+                            ],
+                        },
+                    ],
                 },
             ],
             invalid: [
@@ -296,6 +768,77 @@ function runTests(platform: "win32" | "posix") {
                     filename: "src/test.ts",
                     output: `require("#rules/potato")`,
                 },
+                // (root) relative import from parent when only depth of 0 (sibling) is allowed
+                {
+                    code: `require("../potato")`,
+                    errors: 1,
+                    filename: "src/rules/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: ".",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                    output: `require("#src/potato")`,
+                },
+
+                // (specified) relative import from parent when only depth of 0 (sibling) is allowed
+                {
+                    code: `require("../potato")`,
+                    errors: 1,
+                    filename: "src/rules/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: "src",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                    output: `require("#src/potato")`,
+                },
+
+                // relative path used in file that does not fall within override
+                {
+                    code: `require("./potato")`,
+                    errors: 1,
+                    filename: "src/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: "src/rules",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                    output: `require("#src/potato")`,
+                },
+
+                // relative path used to too large of a depth
+                {
+                    code: `require("../../potato")`,
+                    errors: 1,
+                    filename: "src/rules/foo/bar.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: "src",
+                                    depth: 1,
+                                },
+                            ],
+                        },
+                    ],
+                    output: `require("#src/potato")`,
+                },
             ],
         });
 
@@ -320,6 +863,66 @@ function runTests(platform: "win32" | "posix") {
                 {
                     code: `jest.mock('../src-test/rules/potato')`,
                     filename: "src/test.ts",
+                },
+                // relative path overridden for root and imports from sibling module
+                {
+                    code: `jest.mock("./rules/potato")`,
+                    filename: "src/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: ".",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                },
+                // relative path overridden for a specified directory and imports from sibling module
+                {
+                    code: `jest.mock("./rules/potato")`,
+                    filename: "src/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: "src",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                },
+                // relative path overridden for root and imports from parent module
+                {
+                    code: `jest.mock("../rules/potato")`,
+                    filename: "src/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: ".",
+                                    depth: 1,
+                                },
+                            ],
+                        },
+                    ],
+                },
+                // relative path overridden for a specified directory and imports from parent module
+                {
+                    code: `jest.mock("../rules/potato")`,
+                    filename: "src/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: "src",
+                                    depth: 1,
+                                },
+                            ],
+                        },
+                    ],
                 },
             ],
             invalid: [
@@ -351,6 +954,78 @@ function runTests(platform: "win32" | "posix") {
                     filename: "src/test.ts",
                     output: `jest.mock("#rules/potato")`,
                 },
+
+                // (root) relative import from parent when only depth of 0 (sibling) is allowed
+                {
+                    code: `jest.mock("../potato")`,
+                    errors: 1,
+                    filename: "src/rules/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: ".",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                    output: `jest.mock("#src/potato")`,
+                },
+
+                // (specified) relative import from parent when only depth of 0 (sibling) is allowed
+                {
+                    code: `jest.mock("../potato")`,
+                    errors: 1,
+                    filename: "src/rules/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: "src",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                    output: `jest.mock("#src/potato")`,
+                },
+
+                // relative path used in file that does not fall within override
+                {
+                    code: `jest.mock("./potato")`,
+                    errors: 1,
+                    filename: "src/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: "src/rules",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                    output: `jest.mock("#src/potato")`,
+                },
+
+                // relative path used to too large of a depth
+                {
+                    code: `jest.mock("../../potato")`,
+                    errors: 1,
+                    filename: "src/rules/foo/bar.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    path: "src",
+                                    depth: 1,
+                                },
+                            ],
+                        },
+                    ],
+                    output: `jest.mock("#src/potato")`,
+                },
             ],
         });
 
@@ -372,16 +1047,84 @@ function runTests(platform: "win32" | "posix") {
                     },
                     // does not apply for partial path match
                     {
-                        code: `potato('../src-app/rules/potato');`,
+                        code: `potato("../src-app/rules/potato");`,
                         filename: "src/test.ts",
                         options: [{ aliasImportFunctions: ["potato"] }],
                     },
                     // selects correct alias despite #src being a partial match
                     // and comes first/is shorter as an alias
                     {
-                        code: `potato('../src-test/rules/potato')`,
+                        code: `potato("../src-test/rules/potato")`,
                         filename: "src/test.ts",
                         options: [{ aliasImportFunctions: ["potato"] }],
+                    },
+
+                    // relative path overridden for root and imports from sibling module
+                    {
+                        code: `potato("./rules/potato")`,
+                        filename: "src/test.ts",
+                        options: [
+                            {
+                                aliasImportFunctions: ["potato"],
+                                relativeImportOverrides: [
+                                    {
+                                        path: ".",
+                                        depth: 0,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+
+                    // relative path overridden for a specified directory and imports from sibling module
+                    {
+                        code: `potato("./rules/potato")`,
+                        filename: "src/test.ts",
+                        options: [
+                            {
+                                aliasImportFunctions: ["potato"],
+                                relativeImportOverrides: [
+                                    {
+                                        path: "src",
+                                        depth: 0,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+
+                    // relative path overridden for root and imports from parent module
+                    {
+                        code: `potato("../rules/potato")`,
+                        filename: "src/test.ts",
+                        options: [
+                            {
+                                aliasImportFunctions: ["potato"],
+                                relativeImportOverrides: [
+                                    {
+                                        path: ".",
+                                        depth: 1,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+
+                    // relative path overridden for a specified directory and imports from parent module
+                    {
+                        code: `potato("../rules/potato")`,
+                        filename: "src/test.ts",
+                        options: [
+                            {
+                                aliasImportFunctions: ["potato"],
+                                relativeImportOverrides: [
+                                    {
+                                        path: "src",
+                                        depth: 1,
+                                    },
+                                ],
+                            },
+                        ],
                     },
                 ],
                 invalid: [
@@ -416,6 +1159,82 @@ function runTests(platform: "win32" | "posix") {
                         filename: "src/test.ts",
                         options: [{ aliasImportFunctions: ["potato"] }],
                         output: `potato("#rules/potato")`,
+                    },
+
+                    // (root) relative import from parent when only depth of 0 (sibling) is allowed
+                    {
+                        code: `potato("../potato")`,
+                        errors: 1,
+                        filename: "src/rules/test.ts",
+                        options: [
+                            {
+                                aliasImportFunctions: ["potato"],
+                                relativeImportOverrides: [
+                                    {
+                                        path: ".",
+                                        depth: 0,
+                                    },
+                                ],
+                            },
+                        ],
+                        output: `potato("#src/potato")`,
+                    },
+
+                    // (specified) relative import from parent when only depth of 0 (sibling) is allowed
+                    {
+                        code: `potato("../potato")`,
+                        errors: 1,
+                        filename: "src/rules/test.ts",
+                        options: [
+                            {
+                                aliasImportFunctions: ["potato"],
+                                relativeImportOverrides: [
+                                    {
+                                        path: "src",
+                                        depth: 0,
+                                    },
+                                ],
+                            },
+                        ],
+                        output: `potato("#src/potato")`,
+                    },
+
+                    // relative path used in file that does not fall within override
+                    {
+                        code: `potato("./potato")`,
+                        errors: 1,
+                        filename: "src/test.ts",
+                        options: [
+                            {
+                                aliasImportFunctions: ["potato"],
+                                relativeImportOverrides: [
+                                    {
+                                        path: "src/rules",
+                                        depth: 0,
+                                    },
+                                ],
+                            },
+                        ],
+                        output: `potato("#src/potato")`,
+                    },
+
+                    // relative path used to too large of a depth
+                    {
+                        code: `potato("../../potato")`,
+                        errors: 1,
+                        filename: "src/rules/foo/bar.ts",
+                        options: [
+                            {
+                                aliasImportFunctions: ["potato"],
+                                relativeImportOverrides: [
+                                    {
+                                        path: "src",
+                                        depth: 1,
+                                    },
+                                ],
+                            },
+                        ],
+                        output: `potato("#src/potato")`,
                     },
                 ],
             }

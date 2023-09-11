@@ -10,6 +10,25 @@ import type { JSONSchema4 } from "json-schema";
 import { dirname, join as joinPath, resolve, sep as pathSep } from "path";
 import slash from "slash";
 
+function isPermittedRelativeImport(
+    importModuleName: string,
+    relativeImportOverrides: RelativeImportConfig[],
+    fileAbsoluteDir: string
+) {
+    const configOfPath = relativeImportOverrides.find((config) =>
+        fileAbsoluteDir.includes(resolve(config.path))
+    );
+    if (!configOfPath) {
+        return false;
+    }
+
+    const importParts = importModuleName.split("/");
+    const relativeDepth = importParts.filter(
+        (moduleNamePart) => moduleNamePart === ".."
+    ).length;
+    return configOfPath.depth >= relativeDepth;
+}
+
 function getAliasSuggestion(
     importModuleName: string,
     aliasConfigs: AliasConfig[],
@@ -72,10 +91,49 @@ function getBestAliasConfig(
             : currentBest;
     }, currentAlias);
 }
+
+interface RelativeImportConfig {
+    /**
+     * The starting path from which a relative depth is accepted.
+     *
+     * @example
+     * With a configuration like `{ path: "src/foo", depth: 0 }`
+     *      1. Relative paths can be used in `./src/foo`.
+     *      2. Relative paths can be used in `./src/foo/bar`.
+     *      3. Relative paths can NOT be used in `./src`.
+     *
+     * @example
+     * With a configuration like `{ path: "src/*", depth: 0 }`
+     *      1. Relative paths can be used in `./src/foo`.
+     *      2. Relative paths can be used in `./src/bar/baz`.
+     *      3. Relative paths can NOT be used in `./src`.
+     *
+     * @example
+     * With a configuration like `{ path: "src", depth: 0 }`
+     *      1. Relative paths can be used in `./src/foo`.
+     *      2. Relative paths can be used in `./src/bar/baz`.
+     *      3. Relative paths can be used in `./src`.
+     */
+    path: string;
+    /**
+     * A positive number which represents the relative depth
+     * that is acceptable for the associated path.
+     *
+     * @example
+     * In `./src/foo` with `path: "src"`
+     *      1. `import "./bar"` for `./src/bar` when `depth` \>= `0`.
+     *      2. `import "./bar/baz"` when `depth` \>= `0`.
+     *      3. `import "../bar"` when `depth` \>= `1`.
+     */
+    depth: number;
+}
+
 type ImportAliasOptions = {
     aliasConfigPath?: string;
     // TODO: A fuller solution might need a property for the position, but not sure if needed
     aliasImportFunctions: string[];
+    /** An array defining which paths can be allowed to used relative imports within it to defined depths. */
+    relativeImportOverrides?: RelativeImportConfig[];
 };
 
 /**
@@ -96,6 +154,26 @@ const schemaProperties: Record<keyof ImportAliasOptions, JSONSchema4> = {
             type: "string",
         },
         default: ["require", "mock"],
+    },
+    relativeImportOverrides: {
+        type: "array",
+        default: [],
+        items: {
+            type: "object",
+            properties: {
+                path: {
+                    type: "string",
+                    description:
+                        "The starting path from which a relative depth is accepted.",
+                },
+                depth: {
+                    type: "number",
+                    description:
+                        "A positive number which represents the" +
+                        " relative depth that is acceptable for the associated path.",
+                },
+            },
+        },
     },
 };
 
@@ -125,6 +203,7 @@ const importAliasRule: Rule.RuleModule = {
             aliasConfigPath,
             aliasImportFunctions = schemaProperties.aliasImportFunctions
                 .default as string[],
+            relativeImportOverrides = [],
         }: ImportAliasOptions = context.options[0] || {}; // No idea what the other array values are
 
         const aliasesResult = loadAliasConfigs(cwd, aliasConfigPath);
@@ -159,6 +238,16 @@ const importAliasRule: Rule.RuleModule = {
         ) => {
             // preserve user quote style
             const quotelessRange: AST.Range = [moduleStart + 1, moduleEnd - 1];
+
+            if (
+                isPermittedRelativeImport(
+                    importModuleName,
+                    relativeImportOverrides,
+                    absoluteDir
+                )
+            ) {
+                return undefined;
+            }
 
             const aliasSuggestion = getAliasSuggestion(
                 importModuleName,
