@@ -103,12 +103,6 @@ interface RelativeImportConfig {
      *      3. Relative paths can NOT be used in `./src`.
      *
      * @example
-     * With a configuration like `{ path: "src/*", depth: 0 }`
-     *      1. Relative paths can be used in `./src/foo`.
-     *      2. Relative paths can be used in `./src/bar/baz`.
-     *      3. Relative paths can NOT be used in `./src`.
-     *
-     * @example
      * With a configuration like `{ path: "src", depth: 0 }`
      *      1. Relative paths can be used in `./src/foo`.
      *      2. Relative paths can be used in `./src/bar/baz`.
