@@ -374,12 +374,14 @@ function runTests(platform: "win32" | "posix") {
                     {
                         code: `potato('../src-app/rules/potato');`,
                         filename: "src/test.ts",
+                        options: [{ aliasImportFunctions: ["potato"] }],
                     },
                     // selects correct alias despite #src being a partial match
                     // and comes first/is shorter as an alias
                     {
                         code: `potato('../src-test/rules/potato')`,
                         filename: "src/test.ts",
+                        options: [{ aliasImportFunctions: ["potato"] }],
                     },
                 ],
                 invalid: [
