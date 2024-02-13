@@ -10,23 +10,62 @@ import type { JSONSchema4 } from "json-schema";
 import { dirname, join as joinPath, resolve, sep as pathSep } from "path";
 import slash from "slash";
 
+const isPathImport = (
+    relativeImportOverride: RelativeImportConfig
+): relativeImportOverride is RelativePathConfig => {
+    return (relativeImportOverride as RelativePathConfig).path !== undefined;
+};
+
+const isGlobImport = (
+    relativeImportOverride: RelativeImportConfig
+): relativeImportOverride is RelativeGlobConfig => {
+    return (relativeImportOverride as RelativeGlobConfig).pattern !== undefined;
+};
+
 function isPermittedRelativeImport(
     importModuleName: string,
     relativeImportOverrides: RelativeImportConfig[],
-    fileAbsoluteDir: string
+    fileAbsoluteDir: string,
+    filepath: string
 ) {
-    const configOfPath = relativeImportOverrides.find((config) =>
-        fileAbsoluteDir.includes(resolve(config.path))
-    );
-    if (!configOfPath) {
-        return false;
-    }
+    console.log({
+        importModuleName,
+        relativeImportOverrides,
+        fileAbsoluteDir,
+        filepath,
+    });
+    for (const relativeImportOverride of relativeImportOverrides) {
+        const importParts = importModuleName.split("/");
+        const relativeDepth = importParts.filter(
+            (moduleNamePart) => moduleNamePart === ".."
+        ).length;
 
-    const importParts = importModuleName.split("/");
-    const relativeDepth = importParts.filter(
-        (moduleNamePart) => moduleNamePart === ".."
-    ).length;
-    return configOfPath.depth >= relativeDepth;
+        if (isPathImport(relativeImportOverride)) {
+            const configOfPath = fileAbsoluteDir.includes(
+                resolve(relativeImportOverride.path)
+            );
+            if (!configOfPath) {
+                return false;
+            }
+            return relativeImportOverride.depth >= relativeDepth;
+        }
+
+        if (isGlobImport(relativeImportOverride)) {
+            console.log("here", pathSep);
+
+            const filename = filepath.split("/").at(-1) ?? "";
+            const { pattern, depth } = relativeImportOverride;
+
+            if (pattern instanceof RegExp && pattern.test(filename)) {
+                return depth >= relativeDepth;
+            }
+
+            if (typeof pattern === "string" && filename === pattern) {
+                console.log("b", depth, relativeDepth, depth >= relativeDepth);
+                return depth >= relativeDepth;
+            }
+        }
+    }
 }
 
 function getAliasSuggestion(
@@ -92,7 +131,7 @@ function getBestAliasConfig(
     }, currentAlias);
 }
 
-interface RelativeImportConfig {
+interface RelativePathConfig {
     /**
      * The starting path from which a relative depth is accepted.
      *
@@ -121,6 +160,13 @@ interface RelativeImportConfig {
      */
     depth: number;
 }
+
+interface RelativeGlobConfig {
+    // TODO: add
+    pattern: string | RegExp;
+    depth: number;
+}
+type RelativeImportConfig = RelativePathConfig | RelativeGlobConfig;
 
 type ImportAliasOptions = {
     aliasConfigPath?: string;
@@ -232,12 +278,12 @@ const importAliasRule: Rule.RuleModule = {
         ) => {
             // preserve user quote style
             const quotelessRange: AST.Range = [moduleStart + 1, moduleEnd - 1];
-
             if (
                 isPermittedRelativeImport(
                     importModuleName,
                     relativeImportOverrides,
-                    absoluteDir
+                    absoluteDir,
+                    filepath
                 )
             ) {
                 return undefined;

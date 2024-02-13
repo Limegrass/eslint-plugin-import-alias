@@ -154,6 +154,36 @@ function runTests(platform: "win32" | "posix") {
                     },
                 ],
             },
+
+            {
+                code: `export * from "./app";`,
+                filename: "src/index.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                pattern: "index.ts",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            {
+                code: `export * from "./app";`,
+                filename: "src/index.js",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                pattern: /index.{2,3}$/,
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
         ],
         invalid: [
             // more specific alias
@@ -255,6 +285,23 @@ function runTests(platform: "win32" | "posix") {
                     },
                 ],
                 output: `export * from "#src/potato";`,
+            },
+
+            {
+                code: `export * from "./app";`,
+                errors: 1,
+                filename: "src/index.js",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                pattern: "index.ts",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+                output: `export * from "#src/app";`,
             },
         ],
     });
