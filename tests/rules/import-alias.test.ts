@@ -402,6 +402,22 @@ function runTests(platform: "win32" | "posix") {
                     },
                 ],
             },
+
+            // relative path overridden for index file
+            {
+                code: `export { Potato } from "./app";`,
+                filename: "src/index.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                pattern: /index.{2,3}$/,
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
         ],
         invalid: [
             // more specific alias
@@ -503,6 +519,13 @@ function runTests(platform: "win32" | "posix") {
                     },
                 ],
                 output: `export { Potato } from "#src/potato";`,
+            },
+
+            {
+                code: `export { Potato } from "./app";`,
+                errors: 1,
+                filename: "src/index.js",
+                output: `export { Potato } from "#src/app";`,
             },
         ],
     });
