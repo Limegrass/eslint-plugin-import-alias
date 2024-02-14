@@ -51,17 +51,14 @@ function isPermittedRelativeImport(
         }
 
         if (isGlobImport(relativeImportOverride)) {
-            console.log("here", pathSep);
-
-            const filename = filepath.split("/").at(-1) ?? "";
             const { pattern, depth } = relativeImportOverride;
 
-            if (pattern instanceof RegExp && pattern.test(filename)) {
+            if (pattern instanceof RegExp && pattern.test(filepath)) {
                 return depth >= relativeDepth;
             }
 
+            const filename = filepath.split("/").at(-1) ?? "";
             if (typeof pattern === "string" && filename === pattern) {
-                console.log("b", depth, relativeDepth, depth >= relativeDepth);
                 return depth >= relativeDepth;
             }
         }
