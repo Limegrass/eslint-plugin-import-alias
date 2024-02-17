@@ -423,6 +423,26 @@ function runTests(platform: "win32" | "posix") {
                                 pattern: /index.{2,3}$/,
                                 depth: 0,
                             },
+                            {
+                                pattern: /foo.{2,3}$/,
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // valid because the pattern is tested againt the whole path
+            {
+                code: `export { Potato } from "../../potato";`,
+                filename: "src/rules/foo/bar.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                pattern: "rules",
+                                depth: 2,
+                            },
                         ],
                     },
                 ],
@@ -535,6 +555,24 @@ function runTests(platform: "win32" | "posix") {
                 errors: 1,
                 filename: "src/index.js",
                 output: `export { Potato } from "#src/app";`,
+            },
+
+            // relative path used to too large of a depth
+            {
+                code: `export { Potato } from "../../potato";`,
+                errors: 1,
+                filename: "src/rules/foo/bar.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                pattern: "rules",
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
+                output: `export { Potato } from "#src/potato";`,
             },
         ],
     });

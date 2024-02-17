@@ -33,6 +33,8 @@ function isPermittedRelativeImport(
     relativeImportOverrides.filter((config) => {
         if (config.pattern) {
             const regex = new RegExp(config.pattern);
+            console.log("regex", regex, filepath);
+            console.log("regex2", regex.test(filepath));
             if (regex.test && regex.test(filepath)) {
                 patternsMatchs.push({
                     type: "pattern",
@@ -167,13 +169,41 @@ interface RelativePathConfig {
      *      3. `import "../bar"` when `depth` \>= `1`.
      */
     depth: number;
+    /**
+     * utility type
+     */
     pattern: never;
 }
 
 interface RelativeGlobConfig {
-    // TODO: add description;
+    /**
+     * A regex string pattern that is used to match the file path.
+     *
+     * @example
+     * With a configuration like `{ path: "index.ts", depth: 0 }`
+     *      1. Relative paths can be used in "**\/index.ts" and all file that matches the pattern.
+     *      2. Relative paths can NOT be used in `./src`.
+     *
+     * @example
+     * With a configuration like `{ path: "index{3,4}$", depth: 0 }`
+     *      1. Relative paths can be used in any file that ends with `index...` or `index....`.
+     *      2. Relative paths can be used in `./src`.
+     */
     pattern: string;
+    /**
+     * A positive number which represents the relative depth
+     * that is acceptable for the associated path.
+     *
+     * @example
+     * In `./src/foo` with `path: "src"`
+     *      1. `import "./bar"` for `./src/bar` when `depth` \>= `0`.
+     *      2. `import "./bar/baz"` when `depth` \>= `0`.
+     *      3. `import "../bar"` when `depth` \>= `1`.
+     */
     depth: number;
+    /**
+     * utility type
+     */
     path: never;
 }
 type RelativeImportConfig = RelativePathConfig | RelativeGlobConfig;
