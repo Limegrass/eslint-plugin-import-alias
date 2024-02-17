@@ -10,17 +10,11 @@ import type { JSONSchema4 } from "json-schema";
 import { dirname, join as joinPath, resolve, sep as pathSep } from "path";
 import slash from "slash";
 
-const isPathImport = (
-    relativeImportOverride: RelativeImportConfig
-): relativeImportOverride is RelativePathConfig => {
-    return (relativeImportOverride as RelativePathConfig).path !== undefined;
-};
-
-const isGlobImport = (
-    relativeImportOverride: RelativeImportConfig
-): relativeImportOverride is RelativeGlobConfig => {
-    return (relativeImportOverride as RelativeGlobConfig).pattern !== undefined;
-};
+interface ConfigMatch {
+    type: "pattern" | "path";
+    length: number;
+    depth: number;
+}
 
 function isPermittedRelativeImport(
     importModuleName: string,
@@ -28,41 +22,58 @@ function isPermittedRelativeImport(
     fileAbsoluteDir: string,
     filepath: string
 ) {
-    console.log({
-        importModuleName,
-        relativeImportOverrides,
-        fileAbsoluteDir,
-        filepath,
-    });
-    for (const relativeImportOverride of relativeImportOverrides) {
-        const importParts = importModuleName.split("/");
-        const relativeDepth = importParts.filter(
-            (moduleNamePart) => moduleNamePart === ".."
-        ).length;
+    const importParts = importModuleName.split("/");
+    const relativeDepth = importParts.filter(
+        (moduleNamePart) => moduleNamePart === ".."
+    ).length;
 
-        if (isPathImport(relativeImportOverride)) {
-            const configOfPath = fileAbsoluteDir.includes(
-                resolve(relativeImportOverride.path)
-            );
-            if (!configOfPath) {
-                return false;
+    const pathsMatchs: ConfigMatch[] = [];
+    const patternsMatchs: ConfigMatch[] = [];
+
+    relativeImportOverrides.filter((config) => {
+        if (config.pattern) {
+            const regex = new RegExp(config.pattern);
+            if (regex.test && regex.test(filepath)) {
+                patternsMatchs.push({
+                    type: "pattern",
+                    length: config.pattern.length,
+                    depth: config.depth,
+                });
             }
-            return relativeImportOverride.depth >= relativeDepth;
+        } else {
+            if (fileAbsoluteDir.includes(resolve(config.path))) {
+                pathsMatchs.push({
+                    type: "path",
+                    length: config.path.length,
+                    depth: config.depth,
+                });
+            }
         }
+    });
 
-        if (isGlobImport(relativeImportOverride)) {
-            const { pattern, depth } = relativeImportOverride;
+    if (!pathsMatchs.length && !patternsMatchs.length) {
+        return false;
+    }
 
-            if (pattern instanceof RegExp && pattern.test(filepath)) {
-                return depth >= relativeDepth;
-            }
+    // sorting mainly ensure that errors are checked from highest rule to lowest
 
-            const filename = filepath.split("/").at(-1) ?? "";
-            if (typeof pattern === "string" && filename === pattern) {
-                return depth >= relativeDepth;
-            }
+    const sortedPathsmatchs = pathsMatchs.sort((a, b) => a.length - b.length);
+    for (const pathMatch of sortedPathsmatchs) {
+        if (pathMatch.depth < relativeDepth) {
+            return false;
         }
     }
+
+    const sortedPatternsMatchs = patternsMatchs.sort(
+        (a, b) => a.length - b.length
+    );
+    for (const patternMatch of sortedPatternsMatchs) {
+        if (patternMatch.depth < relativeDepth) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 function getAliasSuggestion(
@@ -156,12 +167,14 @@ interface RelativePathConfig {
      *      3. `import "../bar"` when `depth` \>= `1`.
      */
     depth: number;
+    pattern: never;
 }
 
 interface RelativeGlobConfig {
-    // TODO: add
-    pattern: string | RegExp;
+    // TODO: add description;
+    pattern: string;
     depth: number;
+    path: never;
 }
 type RelativeImportConfig = RelativePathConfig | RelativeGlobConfig;
 

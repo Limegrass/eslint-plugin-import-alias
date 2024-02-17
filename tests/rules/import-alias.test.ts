@@ -162,7 +162,7 @@ function runTests(platform: "win32" | "posix") {
                     {
                         relativeImportOverrides: [
                             {
-                                pattern: "index.ts",
+                                pattern: "index.ts$",
                                 depth: 0,
                             },
                         ],
@@ -177,7 +177,11 @@ function runTests(platform: "win32" | "posix") {
                     {
                         relativeImportOverrides: [
                             {
-                                pattern: /index.{2,3}$/,
+                                pattern: "index.{2,3}$",
+                                depth: 0,
+                            },
+                            {
+                                path: "src",
                                 depth: 0,
                             },
                         ],
@@ -287,15 +291,20 @@ function runTests(platform: "win32" | "posix") {
                 output: `export * from "#src/potato";`,
             },
 
+            // invalid because path take priority over pattern
             {
-                code: `export * from "./app";`,
+                code: `export * from "../app";`,
+                filename: "src/rules/index.ts",
                 errors: 1,
-                filename: "src/index.js",
                 options: [
                     {
                         relativeImportOverrides: [
                             {
-                                pattern: "index.ts",
+                                pattern: "index.{2,3}$",
+                                depth: 0,
+                            },
+                            {
+                                path: "src",
                                 depth: 0,
                             },
                         ],
