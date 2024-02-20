@@ -12,14 +12,12 @@ import slash from "slash";
 
 interface ConfigMatch {
     type: "pattern" | "path";
-    length: number;
     depth: number;
 }
 
 function isPermittedRelativeImport(
     importModuleName: string,
     relativeImportOverrides: RelativeImportConfig[],
-    fileAbsoluteDir: string,
     filepath: string
 ) {
     const importParts = importModuleName.split("/");
@@ -27,50 +25,36 @@ function isPermittedRelativeImport(
         (moduleNamePart) => moduleNamePart === ".."
     ).length;
 
-    const pathsMatchs: ConfigMatch[] = [];
-    const patternsMatchs: ConfigMatch[] = [];
+    const relativeMatch: ConfigMatch[] = [];
 
     relativeImportOverrides.filter((config) => {
-        if (config.pattern) {
+        if ("pattern" in config) {
             const regex = new RegExp(config.pattern);
-            console.log("regex", regex, filepath);
-            console.log("regex2", regex.test(filepath));
             if (regex.test && regex.test(filepath)) {
-                patternsMatchs.push({
+                relativeMatch.push({
                     type: "pattern",
-                    length: config.pattern.length,
                     depth: config.depth,
                 });
             }
-        } else {
-            if (fileAbsoluteDir.includes(resolve(config.path))) {
-                pathsMatchs.push({
+        }
+
+        if ("path" in config) {
+            if (dirname(filepath).includes(resolve(config.path))) {
+                relativeMatch.push({
                     type: "path",
-                    length: config.path.length,
                     depth: config.depth,
                 });
             }
         }
     });
 
-    if (!pathsMatchs.length && !patternsMatchs.length) {
+    if (!relativeMatch.length) {
         return false;
     }
 
-    // sorting mainly ensure that errors are checked from highest rule to lowest
-
-    const sortedPathsmatchs = pathsMatchs.sort((a, b) => a.length - b.length);
-    for (const pathMatch of sortedPathsmatchs) {
-        if (pathMatch.depth < relativeDepth) {
-            return false;
-        }
-    }
-
-    const sortedPatternsMatchs = patternsMatchs.sort(
-        (a, b) => a.length - b.length
-    );
-    for (const patternMatch of sortedPatternsMatchs) {
-        if (patternMatch.depth < relativeDepth) {
+    const sortedRelativeMatch = relativeMatch.sort((a, b) => a.depth - b.depth);
+    for (const match of sortedRelativeMatch) {
+        if (match.depth < relativeDepth) {
             return false;
         }
     }
@@ -169,10 +153,6 @@ interface RelativePathConfig {
      *      3. `import "../bar"` when `depth` \>= `1`.
      */
     depth: number;
-    /**
-     * utility type
-     */
-    pattern: never;
 }
 
 interface RelativeGlobConfig {
@@ -201,11 +181,8 @@ interface RelativeGlobConfig {
      *      3. `import "../bar"` when `depth` \>= `1`.
      */
     depth: number;
-    /**
-     * utility type
-     */
-    path: never;
 }
+
 type RelativeImportConfig = RelativePathConfig | RelativeGlobConfig;
 
 type ImportAliasOptions = {
@@ -322,7 +299,6 @@ const importAliasRule: Rule.RuleModule = {
                 isPermittedRelativeImport(
                     importModuleName,
                     relativeImportOverrides,
-                    absoluteDir,
                     filepath
                 )
             ) {
