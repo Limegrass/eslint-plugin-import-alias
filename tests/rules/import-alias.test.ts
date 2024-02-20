@@ -39,23 +39,6 @@ function runTests(platform: "win32" | "posix") {
             sep: path[platform].sep,
             join: path[platform].join,
         });
-
-        // const files = {
-        //   'tsconfig.json': {
-        //     code: `{
-        //       "compilerOptions": {
-        //         "baseUrl": "./",
-        //         "paths": {
-        //           "#src/*": ["src/*"],
-        //           i don't understand duplicating this aplias
-        //           '#src-test/*': ['src/*'],
-        //           "#rules/*": ["src/rules/*"]
-        //         }
-        //       }
-        //     }`
-        //   },
-        // }
-
         mockExistsSync.mockReturnValue(true);
         mockLoadAliasConfig.mockReturnValue([
             {
@@ -90,13 +73,11 @@ function runTests(platform: "win32" | "posix") {
                 code: `export * from '#rules/potato';`,
                 filename: "src/test.ts",
             },
-
             // does not apply for partial path match
             {
                 code: `export * from '../src-app/rules/potato';`,
                 filename: "src/test.ts",
             },
-
             // does not affect source-less exports
             {
                 code: `export default TestFn = () => {}`,
