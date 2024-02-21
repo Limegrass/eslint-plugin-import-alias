@@ -39,6 +39,7 @@ function runTests(platform: "win32" | "posix") {
             sep: path[platform].sep,
             join: path[platform].join,
         });
+
         mockExistsSync.mockReturnValue(true);
         mockLoadAliasConfig.mockReturnValue([
             {
@@ -78,13 +79,19 @@ function runTests(platform: "win32" | "posix") {
                 code: `export * from '../src-app/rules/potato';`,
                 filename: "src/test.ts",
             },
+            // selects correct alias despite #src being a partial match
+            // and comes first/is shorter as an alias
+            {
+                code: `export * from '../src-test/rules/potato';`,
+                filename: "src/test.ts",
+            },
             // does not affect source-less exports
             {
                 code: `export default TestFn = () => {}`,
                 filename: "src/test.ts",
             },
 
-            // relative path overridde for root, exporting a sibling module
+            // relative path overridden for root, exporting a sibling module
             {
                 code: `export * from "./rules/potato";`,
                 filename: "src/test.ts",
@@ -100,7 +107,7 @@ function runTests(platform: "win32" | "posix") {
                 ],
             },
 
-            // relative path overridde for a specified directory, exporting a sibling module
+            // relative path overridden for a specified directory, exporting a sibling module
             {
                 code: `export * from "./rules/foo";`,
                 filename: "src/test.ts",
@@ -340,6 +347,11 @@ function runTests(platform: "win32" | "posix") {
             // does not affect source-less named exports
             {
                 code: `export const TestFn = () => {}`,
+                filename: "src/test.ts",
+            },
+            // does not affect source-less named exports
+            {
+                code: `const TestFn = () => {}; export { TestFn };`,
                 filename: "src/test.ts",
             },
             // relative path overridde for root, exporting a sibling module

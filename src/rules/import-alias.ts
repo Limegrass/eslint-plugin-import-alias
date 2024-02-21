@@ -10,14 +10,9 @@ import type { JSONSchema4 } from "json-schema";
 import { dirname, join as joinPath, resolve, sep as pathSep } from "path";
 import slash from "slash";
 
-interface ConfigMatch {
-    type: "pattern" | "path";
-    depth: number;
-}
-
 function isPermittedRelativeImport(
     importModuleName: string,
-    relativeImportOverrides: RelativeImportConfig[],
+    relativeImportOverridesSortByDepth: RelativeImportConfig[],
     filepath: string
 ) {
     const importParts = importModuleName.split("/");
@@ -25,35 +20,30 @@ function isPermittedRelativeImport(
         (moduleNamePart) => moduleNamePart === ".."
     ).length;
 
-    const relativeMatch: ConfigMatch[] = [];
-
-    relativeImportOverrides.filter((config) => {
-        if ("pattern" in config) {
-            const regex = new RegExp(config.pattern);
-            if (regex.test && regex.test(filepath)) {
-                relativeMatch.push({
-                    type: "pattern",
-                    depth: config.depth,
-                });
+    const relativeMatch = relativeImportOverridesSortByDepth.filter(
+        (config) => {
+            if ("pattern" in config) {
+                const regex = new RegExp(config.pattern);
+                if (regex.test && regex.test(filepath)) {
+                    return true;
+                }
             }
-        }
 
-        if ("path" in config) {
-            if (dirname(filepath).includes(resolve(config.path))) {
-                relativeMatch.push({
-                    type: "path",
-                    depth: config.depth,
-                });
+            if ("path" in config) {
+                if (dirname(filepath).includes(resolve(config.path))) {
+                    return true;
+                }
             }
+
+            return false;
         }
-    });
+    );
 
     if (!relativeMatch.length) {
         return false;
     }
 
-    const sortedRelativeMatch = relativeMatch.sort((a, b) => a.depth - b.depth);
-    for (const match of sortedRelativeMatch) {
+    for (const match of relativeMatch) {
         if (match.depth < relativeDepth) {
             return false;
         }
@@ -165,8 +155,8 @@ interface RelativeGlobConfig {
      *      2. Relative paths can NOT be used in `./src`.
      *
      * @example
-     * With a configuration like `{ path: "index{3,4}$", depth: 0 }`
-     *      1. Relative paths can be used in any file that ends with `index...` or `index....`.
+     * With a configuration like `{ path: "index\\.[ts,js]" depth: 0 }`
+     *      1. Relative paths can be used in any file that ends with `index.js` or `index.ts`.
      *      2. Relative paths can be used in `./src`.
      */
     pattern: string;
@@ -289,6 +279,9 @@ const importAliasRule: Rule.RuleModule = {
             };
         }
 
+        const relativeImportOverridesSortByDepth = [
+            ...relativeImportOverrides,
+        ].sort((a, b) => a.depth - b.depth);
         const getReportDescriptor = (
             [moduleStart, moduleEnd]: [number, number],
             importModuleName: string
@@ -298,7 +291,7 @@ const importAliasRule: Rule.RuleModule = {
             if (
                 isPermittedRelativeImport(
                     importModuleName,
-                    relativeImportOverrides,
+                    relativeImportOverridesSortByDepth,
                     filepath
                 )
             ) {
