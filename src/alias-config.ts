@@ -1,7 +1,11 @@
 import { sync as findUpSync } from "find-up";
 import micromatch from "micromatch";
-import { dirname, join as joinPath } from "path";
-import { ConfigLoaderResult, loadConfig } from "tsconfig-paths";
+import { join as joinPath } from "path";
+import {
+    ConfigLoaderResult,
+    ConfigLoaderSuccessResult,
+    loadConfig,
+} from "tsconfig-paths";
 
 type AliasConfig = {
     alias: string;
@@ -11,10 +15,7 @@ type AliasConfig = {
     };
 };
 
-function loadAliasConfigs(
-    cwd: string,
-    aliasConfigPath?: string
-): AliasConfig[] | Error {
+function resolveTsconfigFilePath(cwd: string, aliasConfigPath?: string) {
     const configFilePath = findUpSync(
         [aliasConfigPath, "tsconfig.json", "jsconfig.json"].filter(
             Boolean
@@ -23,17 +24,21 @@ function loadAliasConfigs(
     );
 
     if (!configFilePath) {
-        return new Error(
+        throw new Error(
             "cannot find TSConfig or JSConfig, try assigning aliasConfigPath"
         );
     }
 
+    return configFilePath;
+}
+
+function loadTsconfig(configFilePath: string) {
     let config: ConfigLoaderResult;
     try {
         config = loadConfig(configFilePath);
     } catch (error) {
         if (error instanceof SyntaxError) {
-            return new Error(
+            throw new Error(
                 `SyntaxError in TSConfig/JSConfig: ${error.message}`
             );
         }
@@ -41,14 +46,18 @@ function loadAliasConfigs(
     }
 
     if (config.resultType !== "success") {
-        return new Error(
+        throw new Error(
             `validate tsconfig or jsconfig provided and ensure compilerOptions.baseUrl is set: ${config.message}`
         );
     }
 
-    const configDir = dirname(configFilePath);
-    const projectBaseDir = joinPath(configDir, config.baseUrl);
+    return config;
+}
 
+function loadAliasConfigs(
+    config: ConfigLoaderSuccessResult,
+    projectBaseDir: string
+): AliasConfig[] {
     return Object.entries(config.paths).reduce(
         (configs, [aliasGlob, aliasPaths]) => {
             aliasPaths.forEach((aliasPath) => {
@@ -66,4 +75,4 @@ function loadAliasConfigs(
     );
 }
 
-export { AliasConfig, loadAliasConfigs };
+export { AliasConfig, loadAliasConfigs, loadTsconfig, resolveTsconfigFilePath };

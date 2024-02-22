@@ -1,4 +1,8 @@
-import { loadAliasConfigs } from "#src/alias-config";
+import {
+    loadAliasConfigs,
+    loadTsconfig,
+    resolveTsconfigFilePath,
+} from "#src/alias-config";
 import { rules } from "#src/index";
 import { RuleTester } from "eslint";
 import { existsSync } from "fs-extra";
@@ -8,9 +12,12 @@ jest.mock("#src/alias-config");
 jest.mock("fs-extra");
 
 const mockLoadAliasConfig = mocked(loadAliasConfigs);
+const mockLoadTsconfig = mocked(loadTsconfig);
+const mockResolveTsconfigFilePath = mocked(resolveTsconfigFilePath);
 const mockExistsSync = mocked(existsSync);
 
 import path = require("path"); // object import required for overwriting
+import { ConfigLoaderSuccessResult } from "tsconfig-paths";
 jest.mock("path", () => {
     // path must be redefined as object so we can overwrite it
     const original = jest.requireActual("path");
@@ -39,6 +46,13 @@ function runTests(platform: "win32" | "posix") {
             sep: path[platform].sep,
             join: path[platform].join,
         });
+
+        mockLoadTsconfig.mockReturnValue({
+            baseUrl: ".",
+        } as Partial<ConfigLoaderSuccessResult> as ConfigLoaderSuccessResult);
+        mockResolveTsconfigFilePath.mockReturnValue(
+            path.join("/home", "user", "git", "project")
+        );
 
         mockExistsSync.mockReturnValue(true);
         mockLoadAliasConfig.mockReturnValue([

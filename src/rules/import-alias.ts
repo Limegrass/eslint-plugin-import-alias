@@ -1,9 +1,15 @@
-import { AliasConfig, loadAliasConfigs } from "#src/alias-config";
+import {
+    AliasConfig,
+    loadAliasConfigs,
+    loadTsconfig,
+    resolveTsconfigFilePath,
+} from "#src/alias-config";
 import { AST, Rule } from "eslint";
 import type {
     ExportAllDeclaration,
     ExportNamedDeclaration,
     ImportDeclaration,
+    Program,
 } from "estree";
 import { existsSync } from "fs-extra";
 import type { JSONSchema4 } from "json-schema";
@@ -228,6 +234,13 @@ const importAliasRule: Rule.RuleModule = {
     },
 
     create: (context: Rule.RuleContext) => {
+        const reportProgramError = (errorMessage: string) => {
+            return {
+                Program: (node: Program) => {
+                    context.report({ node, message: errorMessage });
+                },
+            };
+        };
         const cwd = context.getCwd();
         const {
             aliasConfigPath,
@@ -236,30 +249,33 @@ const importAliasRule: Rule.RuleModule = {
             relativeImportOverrides = [],
         }: ImportAliasOptions = context.options[0] || {}; // No idea what the other array values are
 
-        const aliasesResult = loadAliasConfigs(cwd, aliasConfigPath);
-        if (aliasesResult instanceof Error) {
-            return {
-                Program: (node) => {
-                    context.report({ node, message: aliasesResult.message });
-                },
-            };
+        let projectBaseDir: string;
+        let aliasesResult: AliasConfig[];
+        try {
+            const configFilePath = resolveTsconfigFilePath(
+                cwd,
+                aliasConfigPath
+            );
+            const tsconfig = loadTsconfig(configFilePath);
+            const configDir = dirname(configFilePath);
+            projectBaseDir = joinPath(configDir, tsconfig.baseUrl);
+            aliasesResult = loadAliasConfigs(tsconfig, projectBaseDir);
+        } catch (error) {
+            if (error instanceof Error) {
+                reportProgramError(error.message);
+            }
+            throw error;
         }
 
         const filepath = resolve(context.getFilename());
         const absoluteDir = dirname(filepath);
 
         if (!existsSync(absoluteDir)) {
-            return {
-                Program: (node) => {
-                    context.report({
-                        node,
-                        message:
-                            "a filepath must be provided, try with --stdin-filename, " +
-                            "call eslint on a file, " +
-                            "or save your buffer as a file and restart eslint in your editor.",
-                    });
-                },
-            };
+            return reportProgramError(
+                "a filepath must be provided, try with --stdin-filename, " +
+                    "call eslint on a file, " +
+                    "or save your buffer as a file and restart eslint in your editor."
+            );
         }
 
         const getReportDescriptor = (
