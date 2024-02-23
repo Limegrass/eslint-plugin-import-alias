@@ -68,6 +68,8 @@ your usage if this does not serve your needs.
 
 ### Enabling relative import overrides
 
+#### Path-based overrides
+
 It is possible to allow relative imports for some paths if desires through configuring
 a `relativeImportOverrides` configuration parameter on the rule. Each configuration requires
 a path and a depth to be specified, where a depth of `0` allows imports of sibling modules,
@@ -107,3 +109,22 @@ In `./src/foo` with `path: "src"`
 1. `import "./bar"` for `./src/bar` when `depth` \>= `0`.
 2. `import "./bar/baz"` when `depth` \>= `0`.
 3. `import "../bar"` when `depth` \>= `1`.
+
+#### Pattern-based overrides
+
+Regular expression patterns serve as a potential alternative to path overrides.
+
+With a configuration like `{ pattern: "index.ts", depth: 0 }`
+
+1. Relative paths can be used in files such as `./src/index.ts`.
+1. Relative paths can be used any file in the folder `./src/index.ts/*`.
+1. Relative paths can NOT be used in files such as `./src/foo.ts`.
+
+With a configuration like `{ pattern: "index\\.(ts|js)$" depth: 0 }`
+
+1. Relative paths can be used in any file that ends with `index.js` or `index.ts`.
+1. Relative paths can be NOT in the folder `./src/index.ts/*`.
+1. Relative paths can be NOT used in `./src/foo.ts`.
+
+If a file matches by both patterns and paths, the maximum depth allowed is simply
+the largest of all matched overrides.

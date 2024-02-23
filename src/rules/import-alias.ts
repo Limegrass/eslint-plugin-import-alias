@@ -205,20 +205,44 @@ const schemaProperties: Record<keyof ImportAliasOptions, JSONSchema4> = {
         type: "array",
         default: [],
         items: {
-            type: "object",
-            properties: {
-                path: {
-                    type: "string",
-                    description:
-                        "The starting path from which a relative depth is accepted.",
+            anyOf: [
+                {
+                    type: "object",
+                    properties: {
+                        path: {
+                            type: "string",
+                            description:
+                                "The starting path from which a relative depth is accepted." +
+                                " Required if `pattern` is not provided",
+                        },
+                        depth: {
+                            type: "number",
+                            description:
+                                "A positive number which represents the" +
+                                " relative depth that is acceptable for the associated path.",
+                        },
+                    },
                 },
-                depth: {
-                    type: "number",
-                    description:
-                        "A positive number which represents the" +
-                        " relative depth that is acceptable for the associated path.",
+
+                {
+                    type: "object",
+                    properties: {
+                        pattern: {
+                            type: "string",
+                            description:
+                                "The pattern to match against the filename for from" +
+                                " which a relative depth is accepted." +
+                                " Required if `path` is not provided",
+                        },
+                        depth: {
+                            type: "number",
+                            description:
+                                "A positive number which represents the" +
+                                " relative depth that is acceptable for the associated path.",
+                        },
+                    },
                 },
-            },
+            ],
         },
     },
 };
