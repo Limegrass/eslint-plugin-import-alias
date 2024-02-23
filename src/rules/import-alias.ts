@@ -13,13 +13,20 @@ import type {
 } from "estree";
 import { existsSync } from "fs-extra";
 import type { JSONSchema4 } from "json-schema";
-import { dirname, join as joinPath, resolve, sep as pathSep } from "path";
+import {
+    dirname,
+    join as joinPath,
+    relative,
+    resolve,
+    sep as pathSep,
+} from "path";
 import slash from "slash";
 
 function isPermittedRelativeImport(
     importModuleName: string,
     relativeImportOverrides: RelativeImportConfig[],
-    filepath: string
+    filepath: string,
+    projectBaseDir: string
 ) {
     const importParts = importModuleName.split("/");
     const relativeDepth = importParts.filter(
@@ -31,7 +38,10 @@ function isPermittedRelativeImport(
     for (const config of configs) {
         if (
             ("path" in config && filepath.includes(resolve(config.path))) ||
-            ("pattern" in config && new RegExp(config.pattern).test(filepath))
+            ("pattern" in config &&
+                new RegExp(config.pattern).test(
+                    relative(projectBaseDir, filepath)
+                ))
         ) {
             return relativeDepth <= config.depth;
         }
@@ -289,7 +299,8 @@ const importAliasRule: Rule.RuleModule = {
                 isPermittedRelativeImport(
                     importModuleName,
                     relativeImportOverrides,
-                    filepath
+                    filepath,
+                    projectBaseDir
                 )
             ) {
                 return undefined;

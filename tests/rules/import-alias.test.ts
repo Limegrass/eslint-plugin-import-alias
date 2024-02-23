@@ -40,6 +40,7 @@ const ruleTester = new RuleTester({
 });
 const cwd = process.cwd();
 
+const projectDirPart = "home";
 function runTests(platform: "win32" | "posix") {
     beforeAll(() => {
         Object.assign(path, {
@@ -50,9 +51,15 @@ function runTests(platform: "win32" | "posix") {
         mockLoadTsconfig.mockReturnValue({
             baseUrl: ".",
         } as Partial<ConfigLoaderSuccessResult> as ConfigLoaderSuccessResult);
-        mockResolveTsconfigFilePath.mockReturnValue(
-            path.join("/home", "user", "git", "project")
+
+        const projectDir = path.join(
+            "/",
+            projectDirPart,
+            "user",
+            "git",
+            "project"
         );
+        mockResolveTsconfigFilePath.mockReturnValue(projectDir);
 
         mockExistsSync.mockReturnValue(true);
         mockLoadAliasConfig.mockReturnValue([
@@ -380,6 +387,24 @@ function runTests(platform: "win32" | "posix") {
                 ],
                 output: `export * from "#src/potato";`,
             },
+
+            // does not match directory parts not a part of the project
+            {
+                code: `export * from "../rules/potato"`,
+                errors: 1,
+                filename: "src/foo/index.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                pattern: projectDirPart,
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
+                output: `export * from "#rules/potato"`,
+            },
         ],
     });
 
@@ -691,6 +716,24 @@ function runTests(platform: "win32" | "posix") {
                 ],
                 output: `export { Potato } from "#src/potato";`,
             },
+
+            // does not match directory parts not a part of the project
+            {
+                code: `export { Potato } from "../rules/potato"`,
+                errors: 1,
+                filename: "src/foo/index.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                pattern: projectDirPart,
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
+                output: `export { Potato } from "#rules/potato"`,
+            },
         ],
     });
 
@@ -991,6 +1034,24 @@ function runTests(platform: "win32" | "posix") {
                     },
                 ],
                 output: `import { Potato } from "#src/potato";`,
+            },
+
+            // does not match directory parts not a part of the project
+            {
+                code: `import { Potato } from "../rules/potato"`,
+                errors: 1,
+                filename: "src/foo/index.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                pattern: projectDirPart,
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
+                output: `import { Potato } from "#rules/potato"`,
             },
         ],
     });
@@ -1293,6 +1354,24 @@ function runTests(platform: "win32" | "posix") {
                     ],
                     output: `require("#src/potato")`,
                 },
+
+                // does not match directory parts not a part of the project
+                {
+                    code: `require("../rules/potato")`,
+                    errors: 1,
+                    filename: "src/foo/index.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    pattern: projectDirPart,
+                                    depth: 1,
+                                },
+                            ],
+                        },
+                    ],
+                    output: `require("#rules/potato")`,
+                },
             ],
         });
 
@@ -1589,6 +1668,24 @@ function runTests(platform: "win32" | "posix") {
                     ],
                     output: `jest.mock("#src/potato")`,
                 },
+
+                // does not match directory parts not a part of the project
+                {
+                    code: `jest.mock("../rules/potato")`,
+                    errors: 1,
+                    filename: "src/foo/index.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    pattern: projectDirPart,
+                                    depth: 1,
+                                },
+                            ],
+                        },
+                    ],
+                    output: `jest.mock("#rules/potato")`,
+                },
             ],
         });
 
@@ -1713,6 +1810,7 @@ function runTests(platform: "win32" | "posix") {
                         filename: "src/index.ts/foo.ts",
                         options: [
                             {
+                                aliasImportFunctions: ["potato"],
                                 relativeImportOverrides: [
                                     {
                                         pattern: "index.ts",
@@ -1767,10 +1865,11 @@ function runTests(platform: "win32" | "posix") {
 
                     // depth priority by pattern when multiple overrides match
                     {
-                        code: `jest.mock("../rules/potato")`,
+                        code: `potato("../rules/potato")`,
                         filename: "src/foo/index.ts",
                         options: [
                             {
+                                aliasImportFunctions: ["potato"],
                                 relativeImportOverrides: [
                                     {
                                         path: "src",
@@ -1912,6 +2011,25 @@ function runTests(platform: "win32" | "posix") {
                             },
                         ],
                         output: `potato("#src/potato")`,
+                    },
+
+                    // does not match directory parts not a part of the project
+                    {
+                        code: `potato("../rules/potato")`,
+                        errors: 1,
+                        filename: "src/foo/index.ts",
+                        options: [
+                            {
+                                aliasImportFunctions: ["potato"],
+                                relativeImportOverrides: [
+                                    {
+                                        pattern: projectDirPart,
+                                        depth: 1,
+                                    },
+                                ],
+                            },
+                        ],
+                        output: `potato("#rules/potato")`,
                     },
                 ],
             }
