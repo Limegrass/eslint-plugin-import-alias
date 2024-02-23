@@ -13,20 +13,24 @@ import slash from "slash";
 function isPermittedRelativeImport(
     importModuleName: string,
     relativeImportOverrides: RelativeImportConfig[],
-    fileAbsoluteDir: string
+    filepath: string
 ) {
-    const configOfPath = relativeImportOverrides.find((config) =>
-        fileAbsoluteDir.includes(resolve(config.path))
-    );
-    if (!configOfPath) {
-        return false;
-    }
-
     const importParts = importModuleName.split("/");
     const relativeDepth = importParts.filter(
         (moduleNamePart) => moduleNamePart === ".."
     ).length;
-    return configOfPath.depth >= relativeDepth;
+
+    const configs = [...relativeImportOverrides];
+    configs.sort((a, b) => b.depth - a.depth); // rank depth descending
+    for (const config of configs) {
+        if (
+            ("path" in config && filepath.includes(resolve(config.path))) ||
+            ("pattern" in config && new RegExp(config.pattern).test(filepath))
+        ) {
+            return relativeDepth <= config.depth;
+        }
+    }
+    return false;
 }
 
 function getAliasSuggestion(
@@ -92,7 +96,7 @@ function getBestAliasConfig(
     }, currentAlias);
 }
 
-interface RelativeImportConfig {
+interface RelativePathConfig {
     /**
      * The starting path from which a relative depth is accepted.
      *
@@ -121,6 +125,38 @@ interface RelativeImportConfig {
      */
     depth: number;
 }
+
+interface RelativeGlobConfig {
+    /**
+     * A regex string pattern that is used to match the file path.
+     *
+     * @example
+     * With a configuration like `{ pattern: "index.ts", depth: 0 }`
+     *      1. Relative paths can be used in files such as `./src/index.ts`.
+     *      1. Relative paths can be used any file in the folder `./src/index.ts/*`.
+     *      2. Relative paths can NOT be used in files such as `./src/foo.ts`.
+     *
+     * @example
+     * With a configuration like `{ pattern: "index\\.(ts|js)$" depth: 0 }`
+     *      1. Relative paths can be used in any file that ends with `index.js` or `index.ts`.
+     *      1. Relative paths can be NOT in the folder `./src/index.ts/*`.
+     *      2. Relative paths can be NOT used in `./src/foo.ts`.
+     */
+    pattern: string;
+    /**
+     * A positive number which represents the relative depth
+     * that is acceptable for the associated path.
+     *
+     * @example
+     * In `./src/foo.ts` with `pattern: "foo.ts$"`
+     *      1. `import "./bar"` for `./src/bar` when `depth` \>= `0`.
+     *      2. `import "./bar/baz"` when `depth` \>= `0`.
+     *      3. `import "../bar"` when `depth` \>= `1`.
+     */
+    depth: number;
+}
+
+type RelativeImportConfig = RelativePathConfig | RelativeGlobConfig;
 
 type ImportAliasOptions = {
     aliasConfigPath?: string;
@@ -237,7 +273,7 @@ const importAliasRule: Rule.RuleModule = {
                 isPermittedRelativeImport(
                     importModuleName,
                     relativeImportOverrides,
-                    absoluteDir
+                    filepath
                 )
             ) {
                 return undefined;
