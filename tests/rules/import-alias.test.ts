@@ -91,7 +91,7 @@ function runTests(platform: "win32" | "posix") {
                 filename: "src/test.ts",
             },
 
-            // relative path overridden for root, exporting a sibling module
+            // relative path overridden for root and exports from sibling module
             {
                 code: `export * from "./rules/potato";`,
                 filename: "src/test.ts",
@@ -107,9 +107,9 @@ function runTests(platform: "win32" | "posix") {
                 ],
             },
 
-            // relative path overridden for a specified directory, exporting a sibling module
+            // relative path overridden for a specified directory and exports from sibling module
             {
-                code: `export * from "./rules/foo";`,
+                code: `export * from "./rules/potato";`,
                 filename: "src/test.ts",
                 options: [
                     {
@@ -123,7 +123,39 @@ function runTests(platform: "win32" | "posix") {
                 ],
             },
 
-            // relative path overridde for a glob pattern, exporting a sibling module
+            // relative path overridden for root and exports from parent module
+            {
+                code: `export * from "../rules/potato";`,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: ".",
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // relative path overridden for a specified directory and exports from parent module
+            {
+                code: `export * from "../rules/potato";`,
+                filename: "src/test.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                path: "src",
+                                depth: 1,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // pattern override for a glob pattern, exporting a sibling module
             {
                 code: `export * from "./rules/bar";`,
                 filename: "src/index.ts",
@@ -131,7 +163,7 @@ function runTests(platform: "win32" | "posix") {
                     {
                         relativeImportOverrides: [
                             {
-                                pattern: "index\\.(ts|js)",
+                                pattern: "index\\.(ts|js)$",
                                 depth: 0,
                             },
                         ],
@@ -139,7 +171,23 @@ function runTests(platform: "win32" | "posix") {
                 ],
             },
 
-            // mixing relative path overridde with path and pattern
+            // pattern matches as RegExp for exporting sibling module
+            {
+                code: `export * from "./rules/bar";`,
+                filename: "src/index.ts/foo.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                pattern: "index.ts",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // mixing relative path override with path and pattern
             {
                 code: `export * from "./rules/foobar";`,
                 filename: "src/test.ts",
@@ -159,40 +207,40 @@ function runTests(platform: "win32" | "posix") {
                 ],
             },
 
-            // depth priority when multiple overrides match
+            // depth priority by path when multiple overrides match
             {
                 code: `export * from "../rules/potato";`,
-                filename: "src/index.ts",
+                filename: "src/foo/index.ts",
                 options: [
                     {
                         relativeImportOverrides: [
                             {
-                                path: "src",
-                                depth: 1,
-                            },
-                            {
                                 pattern: "index\\.(ts|js)",
                                 depth: 0,
+                            },
+                            {
+                                path: "src",
+                                depth: 1,
                             },
                         ],
                     },
                 ],
             },
 
-            // depth priority when multiple overrides match
+            // depth priority by pattern when multiple overrides match
             {
                 code: `export * from "../rules/potato";`,
-                filename: "src/index.ts",
+                filename: "src/foo/index.ts",
                 options: [
                     {
                         relativeImportOverrides: [
                             {
-                                pattern: "index\\.(ts|js)",
-                                depth: 1,
-                            },
-                            {
                                 path: "src",
                                 depth: 0,
+                            },
+                            {
+                                pattern: "index\\.(ts|js)",
+                                depth: 1,
                             },
                         ],
                     },
@@ -229,7 +277,7 @@ function runTests(platform: "win32" | "posix") {
                 output: "export * from '#rules/potato';",
             },
 
-            // (root) relative export from parent, allowing only a depth of 0. Here the depth is 1
+            // (root) relative export from parent when only depth of 0 (sibling) is allowed
             {
                 code: `export * from "../potato";`,
                 errors: 1,
@@ -332,7 +380,6 @@ function runTests(platform: "win32" | "posix") {
                 code: `export { Potato } from '#rules/potato';`,
                 filename: "src/test.ts",
             },
-
             // does not apply for partial path match
             {
                 code: `export { Potato } from '../src-app/rules/potato';`,
@@ -354,7 +401,8 @@ function runTests(platform: "win32" | "posix") {
                 code: `const TestFn = () => {}; export { TestFn };`,
                 filename: "src/test.ts",
             },
-            // relative path overridde for root, exporting a sibling module
+
+            // relative path overridden for root and exports from sibling module
             {
                 code: `export { Potato } from "./rules/potato";`,
                 filename: "src/test.ts",
@@ -369,30 +417,16 @@ function runTests(platform: "win32" | "posix") {
                     },
                 ],
             },
-            // relative path overridde for a specified directory, exporting a sibling module
+
+            // relative path overridden for a specified directory and exports from sibling module
             {
-                code: `export { Potato } from "./rules/foo";`,
+                code: `export { Potato } from "./rules/potato";`,
                 filename: "src/test.ts",
                 options: [
                     {
                         relativeImportOverrides: [
                             {
                                 path: "src",
-                                depth: 0,
-                            },
-                        ],
-                    },
-                ],
-            },
-            // relative path overridde for a glob pattern, exporting a sibling module
-            {
-                code: `export { Potato } from "./rules/bar";`,
-                filename: "src/index.ts",
-                options: [
-                    {
-                        relativeImportOverrides: [
-                            {
-                                pattern: "index\\.(ts|js)",
                                 depth: 0,
                             },
                         ],
@@ -432,7 +466,39 @@ function runTests(platform: "win32" | "posix") {
                 ],
             },
 
-            // mixing relative path overridde with path and pattern
+            // pattern override for a glob pattern, exporting a sibling module
+            {
+                code: `export { Potato } from "./rules/bar";`,
+                filename: "src/index.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                pattern: "index\\.(ts|js)$",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // pattern matches as RegExp for exporting sibling module
+            {
+                code: `export { Potato } from "./rules/bar";`,
+                filename: "src/index.ts/foo.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                pattern: "index.ts",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // mixing relative path override with path and pattern
             {
                 code: `export { Potato } from "./rules/foobar";`,
                 filename: "src/test.ts",
@@ -452,40 +518,40 @@ function runTests(platform: "win32" | "posix") {
                 ],
             },
 
-            // depth priority when multiple overrides match
+            // depth priority by path when multiple overrides match
             {
                 code: `export { Potato } from "../rules/potato";`,
-                filename: "src/index.ts",
+                filename: "src/foo/index.ts",
                 options: [
                     {
                         relativeImportOverrides: [
                             {
-                                path: "src",
-                                depth: 1,
-                            },
-                            {
                                 pattern: "index\\.(ts|js)",
                                 depth: 0,
+                            },
+                            {
+                                path: "src",
+                                depth: 1,
                             },
                         ],
                     },
                 ],
             },
 
-            // depth priority when multiple overrides match
+            // depth priority by pattern when multiple overrides match
             {
                 code: `export { Potato } from "../rules/potato";`,
-                filename: "src/index.ts",
+                filename: "src/foo/index.ts",
                 options: [
                     {
                         relativeImportOverrides: [
                             {
-                                pattern: "index\\.(ts|js)",
-                                depth: 1,
-                            },
-                            {
                                 path: "src",
                                 depth: 0,
+                            },
+                            {
+                                pattern: "index\\.(ts|js)",
+                                depth: 1,
                             },
                         ],
                     },
@@ -521,7 +587,8 @@ function runTests(platform: "win32" | "posix") {
                 filename: "src/test.ts",
                 output: "export { Potato } from '#rules/potato';",
             },
-            // (root) relative export from parent, allowing only a depth of 0. Here the depth is 1
+
+            // (root) relative export from parent when only depth of 0 (sibling) is allowed
             {
                 code: `export { Potato } from "../potato";`,
                 errors: 1,
@@ -538,6 +605,7 @@ function runTests(platform: "win32" | "posix") {
                 ],
                 output: `export { Potato } from "#src/potato";`,
             },
+
             // (specified) relative export from parent when only depth of 0 (sibling) is allowed
             {
                 code: `export { Potato } from "../potato";`,
@@ -555,6 +623,7 @@ function runTests(platform: "win32" | "posix") {
                 ],
                 output: `export { Potato } from "#src/potato";`,
             },
+
             // relative path used in file that does not fall within override
             {
                 code: `export { Potato } from "./potato";`,
@@ -572,6 +641,7 @@ function runTests(platform: "win32" | "posix") {
                 ],
                 output: `export { Potato } from "#src/potato";`,
             },
+
             // relative path used to too large of a depth
             {
                 code: `export { Potato } from "../../potato";`,
@@ -697,7 +767,39 @@ function runTests(platform: "win32" | "posix") {
                 ],
             },
 
-            // mixing relative path overridde with path and pattern
+            // pattern override for a glob pattern, exporting a sibling module
+            {
+                code: `import { Potato } from "./rules/foobar"`,
+                filename: "src/index.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                pattern: "index\\.(ts|js)$",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // pattern matches as RegExp for exporting sibling module
+            {
+                code: `import { Potato } from "./rules/bar";`,
+                filename: "src/index.ts/foo.ts",
+                options: [
+                    {
+                        relativeImportOverrides: [
+                            {
+                                pattern: "index.ts",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+            },
+
+            // mixing relative path override with path and pattern
             {
                 code: `import { Potato } from "./rules/foobar";`,
                 filename: "src/test.ts",
@@ -717,40 +819,40 @@ function runTests(platform: "win32" | "posix") {
                 ],
             },
 
-            // depth priority when multiple overrides match
+            // depth priority by path when multiple overrides match
             {
                 code: `import { Potato } from "../rules/potato";`,
-                filename: "src/index.ts",
+                filename: "src/foo/index.ts",
                 options: [
                     {
                         relativeImportOverrides: [
                             {
-                                path: "src",
-                                depth: 1,
-                            },
-                            {
                                 pattern: "index\\.(ts|js)",
                                 depth: 0,
+                            },
+                            {
+                                path: "src",
+                                depth: 1,
                             },
                         ],
                     },
                 ],
             },
 
-            // depth priority when multiple overrides match
+            // depth priority by pattern when multiple overrides match
             {
                 code: `import { Potato } from "../rules/potato";`,
-                filename: "src/index.ts",
+                filename: "src/foo/index.ts",
                 options: [
                     {
                         relativeImportOverrides: [
                             {
-                                pattern: "index\\.(ts|js)",
-                                depth: 1,
-                            },
-                            {
                                 path: "src",
                                 depth: 0,
+                            },
+                            {
+                                pattern: "index\\.(ts|js)",
+                                depth: 1,
                             },
                         ],
                     },
@@ -967,7 +1069,39 @@ function runTests(platform: "win32" | "posix") {
                     ],
                 },
 
-                // mixing relative path overridde with path and pattern
+                // pattern override for a glob pattern, exporting a sibling module
+                {
+                    code: `require("./rules/foobar")`,
+                    filename: "src/index.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    pattern: "index\\.(ts|js)$",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                },
+
+                // pattern matches as RegExp for exporting sibling module
+                {
+                    code: `require("./rules/foobar")`,
+                    filename: "src/index.ts/foo.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    pattern: "index.ts",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                },
+
+                // mixing relative path override with path and pattern
                 {
                     code: `require("./rules/foobar")`,
                     filename: "src/test.ts",
@@ -987,40 +1121,40 @@ function runTests(platform: "win32" | "posix") {
                     ],
                 },
 
-                // depth priority when multiple overrides match
+                // depth priority by path when multiple overrides match
                 {
                     code: `require("../rules/potato")`,
-                    filename: "src/index.ts",
+                    filename: "src/foo/index.ts",
                     options: [
                         {
                             relativeImportOverrides: [
                                 {
-                                    path: "src",
-                                    depth: 1,
-                                },
-                                {
                                     pattern: "index\\.(ts|js)",
                                     depth: 0,
+                                },
+                                {
+                                    path: "src",
+                                    depth: 1,
                                 },
                             ],
                         },
                     ],
                 },
 
-                // depth priority when multiple overrides match
+                // depth priority by pattern when multiple overrides match
                 {
                     code: `require("../rules/potato")`,
-                    filename: "src/index.ts",
+                    filename: "src/foo/index.ts",
                     options: [
                         {
                             relativeImportOverrides: [
                                 {
-                                    pattern: "index\\.(ts|js)",
-                                    depth: 1,
-                                },
-                                {
                                     path: "src",
                                     depth: 0,
+                                },
+                                {
+                                    pattern: "index\\.(ts|js)",
+                                    depth: 1,
                                 },
                             ],
                         },
@@ -1230,7 +1364,40 @@ function runTests(platform: "win32" | "posix") {
                         },
                     ],
                 },
-                // mixing relative path overridde with path and pattern
+
+                // pattern override for a glob pattern, exporting a sibling module
+                {
+                    code: `jest.mock("./rules/foobar")`,
+                    filename: "src/test.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    pattern: "test\\.(ts|js)$",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                },
+
+                // pattern matches as RegExp for exporting sibling module
+                {
+                    code: `jest.mock("./rules/foobar")`,
+                    filename: "src/index.ts/foo.ts",
+                    options: [
+                        {
+                            relativeImportOverrides: [
+                                {
+                                    pattern: "index.ts",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                },
+
+                // mixing relative path override with path and pattern
                 {
                     code: `jest.mock("./rules/foobar")`,
                     filename: "src/test.ts",
@@ -1249,39 +1416,40 @@ function runTests(platform: "win32" | "posix") {
                         },
                     ],
                 },
-                // depth priority when multiple overrides match
+                // depth priority by path when multiple overrides match
                 {
                     code: `jest.mock("../rules/potato")`,
-                    filename: "src/index.ts",
+                    filename: "src/foo/index.ts",
                     options: [
                         {
                             relativeImportOverrides: [
                                 {
-                                    path: "src",
-                                    depth: 1,
-                                },
-                                {
                                     pattern: "index\\.(ts|js)",
                                     depth: 0,
+                                },
+                                {
+                                    path: "src",
+                                    depth: 1,
                                 },
                             ],
                         },
                     ],
                 },
-                // depth priority when multiple overrides match
+
+                // depth priority by pattern when multiple overrides match
                 {
                     code: `jest.mock("../rules/potato")`,
-                    filename: "src/index.ts",
+                    filename: "src/foo/index.ts",
                     options: [
                         {
                             relativeImportOverrides: [
                                 {
-                                    pattern: "index\\.(ts|js)",
-                                    depth: 1,
-                                },
-                                {
                                     path: "src",
                                     depth: 0,
+                                },
+                                {
+                                    pattern: "index\\.(ts|js)",
+                                    depth: 1,
                                 },
                             ],
                         },
@@ -1508,7 +1676,7 @@ function runTests(platform: "win32" | "posix") {
                         ],
                     },
 
-                    // relative path overridde for a glob pattern, exporting a sibling module
+                    // pattern override for a glob pattern, exporting a sibling module
                     {
                         code: `potato("./rules/foobar")`,
                         filename: "src/index.ts",
@@ -1517,7 +1685,7 @@ function runTests(platform: "win32" | "posix") {
                                 aliasImportFunctions: ["potato"],
                                 relativeImportOverrides: [
                                     {
-                                        pattern: "index\\.(ts|js)",
+                                        pattern: "index\\.(ts|js)$",
                                         depth: 0,
                                     },
                                 ],
@@ -1525,7 +1693,23 @@ function runTests(platform: "win32" | "posix") {
                         ],
                     },
 
-                    // mixing relative path overridde with path and pattern
+                    // pattern matches as RegExp for exporting sibling module
+                    {
+                        code: `potato("./rules/foobar")`,
+                        filename: "src/index.ts/foo.ts",
+                        options: [
+                            {
+                                relativeImportOverrides: [
+                                    {
+                                        pattern: "index.ts",
+                                        depth: 0,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+
+                    // mixing relative path override with path and pattern
                     {
                         code: `potato("./rules/foobar")`,
                         filename: "src/test.ts",
@@ -1546,21 +1730,41 @@ function runTests(platform: "win32" | "posix") {
                         ],
                     },
 
-                    // depth priority when multiple overrides match
+                    // depth priority by path when multiple overrides match
                     {
                         code: `potato("../rules/potato")`,
-                        filename: "src/index.ts",
+                        filename: "src/foo/index.ts",
                         options: [
                             {
                                 aliasImportFunctions: ["potato"],
                                 relativeImportOverrides: [
                                     {
+                                        pattern: "index\\.(ts|js)",
+                                        depth: 0,
+                                    },
+                                    {
                                         path: "src",
                                         depth: 1,
                                     },
+                                ],
+                            },
+                        ],
+                    },
+
+                    // depth priority by pattern when multiple overrides match
+                    {
+                        code: `jest.mock("../rules/potato")`,
+                        filename: "src/foo/index.ts",
+                        options: [
+                            {
+                                relativeImportOverrides: [
+                                    {
+                                        path: "src",
+                                        depth: 0,
+                                    },
                                     {
                                         pattern: "index\\.(ts|js)",
-                                        depth: 0,
+                                        depth: 1,
                                     },
                                 ],
                             },

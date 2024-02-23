@@ -12,7 +12,7 @@ import slash from "slash";
 
 function isPermittedRelativeImport(
     importModuleName: string,
-    relativeImportOverridesSortByDepth: RelativeImportConfig[],
+    relativeImportOverrides: RelativeImportConfig[],
     filepath: string
 ) {
     const importParts = importModuleName.split("/");
@@ -20,36 +20,17 @@ function isPermittedRelativeImport(
         (moduleNamePart) => moduleNamePart === ".."
     ).length;
 
-    const relativeMatch = relativeImportOverridesSortByDepth.filter(
-        (config) => {
-            if ("pattern" in config) {
-                const regex = new RegExp(config.pattern);
-                if (regex.test && regex.test(filepath)) {
-                    return true;
-                }
-            }
-
-            if ("path" in config) {
-                if (dirname(filepath).includes(resolve(config.path))) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-    );
-
-    if (!relativeMatch.length) {
-        return false;
-    }
-
-    for (const match of relativeMatch) {
-        if (match.depth < relativeDepth) {
-            return false;
+    const configs = [...relativeImportOverrides];
+    configs.sort((a, b) => b.depth - a.depth); // rank depth descending
+    for (const config of configs) {
+        if (
+            ("path" in config && filepath.includes(resolve(config.path))) ||
+            ("pattern" in config && new RegExp(config.pattern).test(filepath))
+        ) {
+            return relativeDepth <= config.depth;
         }
     }
-
-    return true;
+    return false;
 }
 
 function getAliasSuggestion(
@@ -150,14 +131,16 @@ interface RelativeGlobConfig {
      * A regex string pattern that is used to match the file path.
      *
      * @example
-     * With a configuration like `{ path: "index.ts", depth: 0 }`
-     *      1. Relative paths can be used in "**\/index.ts" and all file that matches the pattern.
-     *      2. Relative paths can NOT be used in `./src`.
+     * With a configuration like `{ pattern: "index.ts", depth: 0 }`
+     *      1. Relative paths can be used in files such as `./src/index.ts`.
+     *      1. Relative paths can be used any file in the folder `./src/index.ts/*`.
+     *      2. Relative paths can NOT be used in files such as `./src/foo.ts`.
      *
      * @example
-     * With a configuration like `{ path: "index\\.[ts,js]" depth: 0 }`
+     * With a configuration like `{ pattern: "index\\.(ts|js)$" depth: 0 }`
      *      1. Relative paths can be used in any file that ends with `index.js` or `index.ts`.
-     *      2. Relative paths can be used in `./src`.
+     *      1. Relative paths can be NOT in the folder `./src/index.ts/*`.
+     *      2. Relative paths can be NOT used in `./src/foo.ts`.
      */
     pattern: string;
     /**
@@ -165,7 +148,7 @@ interface RelativeGlobConfig {
      * that is acceptable for the associated path.
      *
      * @example
-     * In `./src/foo` with `path: "src"`
+     * In `./src/foo.ts` with `pattern: "foo.ts$"`
      *      1. `import "./bar"` for `./src/bar` when `depth` \>= `0`.
      *      2. `import "./bar/baz"` when `depth` \>= `0`.
      *      3. `import "../bar"` when `depth` \>= `1`.
@@ -279,19 +262,17 @@ const importAliasRule: Rule.RuleModule = {
             };
         }
 
-        const relativeImportOverridesSortByDepth = [
-            ...relativeImportOverrides,
-        ].sort((a, b) => a.depth - b.depth);
         const getReportDescriptor = (
             [moduleStart, moduleEnd]: [number, number],
             importModuleName: string
         ) => {
             // preserve user quote style
             const quotelessRange: AST.Range = [moduleStart + 1, moduleEnd - 1];
+
             if (
                 isPermittedRelativeImport(
                     importModuleName,
-                    relativeImportOverridesSortByDepth,
+                    relativeImportOverrides,
                     filepath
                 )
             ) {
