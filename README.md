@@ -37,6 +37,16 @@ Check the [rules documentation][docs-import-alias] for further configuration.
 }
 ```
 
-This configuration is also turned on automatically if you extend `eslint:recommended`.
+The configuration above is also equivalent to
+
+```jsonc
+// .eslintrc
+{
+    "extends": [
+        // ... - your other extends, such as `"eslint:recommended"`
+        "plugin:@limegrass/import-alias/recommended"
+    ]
+}
+```
 
 [docs-import-alias]: docs/rules/import-alias.md
