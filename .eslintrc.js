@@ -10,14 +10,14 @@ const config = {
         "plugin:import/recommended",
         "plugin:import/typescript",
         "prettier",
+        "plugin:@limegrass/import-alias/recommended",
     ],
     parser: "@typescript-eslint/parser",
-    plugins: ["@typescript-eslint", "eslint-plugin-tsdoc", "import", "self"],
+    plugins: ["@typescript-eslint", "eslint-plugin-tsdoc", "import"],
     root: true,
     rules: {
         "import/no-default-export": "error",
         "tsdoc/syntax": "warn",
-        "self/import-alias": "error",
     },
     settings: {
         "import/parsers": {
