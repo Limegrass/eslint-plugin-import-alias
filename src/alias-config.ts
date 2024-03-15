@@ -15,13 +15,20 @@ type AliasConfig = {
     };
 };
 
-function resolveTsconfigFilePath(cwd: string, aliasConfigPath?: string) {
-    const configFilePath = findUpSync(
-        [aliasConfigPath, "tsconfig.json", "jsconfig.json"].filter(
-            Boolean
-        ) as string[],
-        { cwd }
-    );
+function resolveTsconfigFilePath(
+    startDirs: string[],
+    aliasConfigPath?: string
+) {
+    const configFilePath = startDirs
+        .map((dir) => {
+            return findUpSync(
+                [aliasConfigPath, "tsconfig.json", "jsconfig.json"].filter(
+                    Boolean
+                ) as string[],
+                { cwd: dir }
+            );
+        })
+        .find((tsconfigPath) => !!tsconfigPath);
 
     if (!configFilePath) {
         throw new Error(

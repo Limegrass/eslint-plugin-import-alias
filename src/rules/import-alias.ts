@@ -299,7 +299,7 @@ const importAliasRule: Rule.RuleModule = {
         let aliasesResult: AliasConfig[];
         try {
             const configFilePath = resolveTsconfigFilePath(
-                cwd,
+                [filepath, cwd],
                 aliasConfigPath
             );
             const tsconfig = loadTsconfig(configFilePath);
