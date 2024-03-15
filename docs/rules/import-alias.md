@@ -66,6 +66,31 @@ This was based off an assumption that custom mock functions will take a similar
 parameter to `require` or `jest.mock`, but please submit an issue detailing
 your usage if this does not serve your needs.
 
+### Specifying TSConfig
+
+The relative path to `tsconfig.json` can be explicitly specified using the `aliasConfigPath`
+configuration key. An example for a tsconfig found in a `config` folder of a project could be
+
+```jsonc
+{
+    // ...
+    "rules": {
+        // ...
+        "@limegrass/import-alias/import-alias": [
+            "error",
+            {
+                "aliasConfigPath": "config/tsconfig.json"
+            }
+        ]
+    }
+}
+```
+
+One potentially useful case of this is where you have nested `tsconfig.json` files.
+You can the `aliasConfigPath` option with the `__dirname` variable in JavaScript ESLint config files
+to configure some dynamic roots against different project roots.
+See [this issue](https://github.com/Limegrass/eslint-plugin-import-alias/issues/15#issuecomment-1998548874) for an example usage.
+
 ### Enabling relative import overrides
 
 #### Path-based overrides
