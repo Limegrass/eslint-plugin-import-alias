@@ -276,6 +276,18 @@ const importAliasRule: Rule.RuleModule = {
             };
         };
         const cwd = context.getCwd();
+
+        const filepath = resolve(context.getFilename());
+        const absoluteDir = dirname(filepath);
+
+        if (!existsSync(absoluteDir)) {
+            return reportProgramError(
+                "a filepath must be provided, try with --stdin-filename, " +
+                    "call eslint on a file, " +
+                    "or save your buffer as a file and restart eslint in your editor."
+            );
+        }
+
         const {
             aliasConfigPath,
             aliasImportFunctions = schemaProperties.aliasImportFunctions
@@ -299,17 +311,6 @@ const importAliasRule: Rule.RuleModule = {
                 reportProgramError(error.message);
             }
             throw error;
-        }
-
-        const filepath = resolve(context.getFilename());
-        const absoluteDir = dirname(filepath);
-
-        if (!existsSync(absoluteDir)) {
-            return reportProgramError(
-                "a filepath must be provided, try with --stdin-filename, " +
-                    "call eslint on a file, " +
-                    "or save your buffer as a file and restart eslint in your editor."
-            );
         }
 
         const getReportDescriptor = (
