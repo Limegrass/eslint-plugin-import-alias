@@ -1,0 +1,21 @@
+{
+    "main": "build/index.js",
+    "scripts": {
+        "build": "tsc",
+        "prepare": "npm run build"
+    },
+    "devDependencies": {
+        "@types/node": "^20",
+        "@typescript-eslint/eslint-plugin": "^5",
+        "@typescript-eslint/parser": "^5",
+        "eslint": "^8",
+        "eslint-import-resolver-typescript": "^3",
+        "@limegrass/eslint-plugin-import-alias": "file:..",
+        "typescript": "^5"
+    },
+    "name": "@limegrass/eslint-plugin-import-alias.example.nested-configs",
+    "version": "1.0.0",
+    "description": "Separate ESLint/TSConfig configurations per directory - note that TSConfig sourcing overwrites key-value pairs",
+    "author": "limegrass",
+    "license": "MIT"
+}

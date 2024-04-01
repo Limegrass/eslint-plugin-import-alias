@@ -1,0 +1,14 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "declaration": true,
+        "esModuleInterop": true,
+        "outDir": "./build",
+        "paths": {
+            "#src-overwritten/*": ["./*"]
+        },
+        "resolveJsonModule": true,
+        "strictNullChecks": true
+    }
+}
