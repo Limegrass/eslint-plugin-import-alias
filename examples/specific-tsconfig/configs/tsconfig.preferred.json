@@ -1,0 +1,15 @@
+{
+    "exclude": ["node_modules/*", "public/*"],
+    "include": ["src"],
+    "compilerOptions": {
+        "baseUrl": "../",
+        "declaration": true,
+        "esModuleInterop": true,
+        "outDir": "./build",
+        "paths": {
+            "#from-preferred-config/*": ["src/*"]
+        },
+        "resolveJsonModule": true,
+        "strictNullChecks": true
+    }
+}
