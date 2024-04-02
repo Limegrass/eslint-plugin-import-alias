@@ -308,7 +308,7 @@ const importAliasRule: Rule.RuleModule = {
             aliasesResult = loadAliasConfigs(tsconfig, projectBaseDir);
         } catch (error) {
             if (error instanceof Error) {
-                reportProgramError(error.message);
+                return reportProgramError(error.message);
             }
             throw error;
         }
