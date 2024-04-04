@@ -1,9 +1,4 @@
-import {
-    AliasConfig,
-    loadAliasConfigs,
-    loadTsconfig,
-    resolveTsconfigFilePath,
-} from "#src/alias-config";
+import { AliasConfig, loadAliasConfigs, loadTsconfig } from "#src/alias-config";
 import { AST, Rule } from "eslint";
 import type {
     ExportAllDeclaration,
@@ -275,6 +270,14 @@ const importAliasRule: Rule.RuleModule = {
                 },
             };
         };
+
+        /**
+         * cwd seems to resolve to the path where the .eslintrc.js being used is found.
+         * Thus, it is the appropriate place to append the aliasConfigPath from since that is
+         * where the user would specify their aliasConfigPath relative to.
+         * We can also otherwise resolve the tsconfig/jsconfig from the dirname(filepath),
+         * which tsconfig-paths will attempt automatically for `tsconfig.json` and `jsconfig.json`
+         */
         const cwd = context.getCwd();
 
         const filepath = resolve(context.getFilename());
@@ -298,13 +301,9 @@ const importAliasRule: Rule.RuleModule = {
         let projectBaseDir: string;
         let aliasesResult: AliasConfig[];
         try {
-            const configFilePath = resolveTsconfigFilePath(
-                [filepath, cwd],
-                aliasConfigPath
-            );
-            const tsconfig = loadTsconfig(configFilePath);
-            const configDir = dirname(configFilePath);
-            projectBaseDir = joinPath(configDir, tsconfig.baseUrl);
+            const tsconfig = loadTsconfig(cwd, aliasConfigPath, filepath);
+            const configDir = dirname(tsconfig.configFileAbsolutePath);
+            projectBaseDir = joinPath(configDir, tsconfig.baseUrl ?? "");
             aliasesResult = loadAliasConfigs(tsconfig, projectBaseDir);
         } catch (error) {
             if (error instanceof Error) {

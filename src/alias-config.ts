@@ -1,6 +1,5 @@
-import { sync as findUpSync } from "find-up";
 import micromatch from "micromatch";
-import { join as joinPath } from "path";
+import { dirname, isAbsolute, join as joinPath } from "path";
 import {
     ConfigLoaderResult,
     ConfigLoaderSuccessResult,
@@ -15,34 +14,24 @@ type AliasConfig = {
     };
 };
 
-function resolveTsconfigFilePath(
-    startDirs: string[],
-    aliasConfigPath?: string
+function loadTsconfig(
+    eslintConfigPath: string,
+    aliasConfigPath: string | undefined,
+    codeFilePath: string
 ) {
-    const configFilePath = startDirs
-        .map((dir) => {
-            return findUpSync(
-                [aliasConfigPath, "tsconfig.json", "jsconfig.json"].filter(
-                    Boolean
-                ) as string[],
-                { cwd: dir }
-            );
-        })
-        .find((tsconfigPath) => !!tsconfigPath);
-
-    if (!configFilePath) {
-        throw new Error(
-            "cannot find TSConfig or JSConfig, try assigning aliasConfigPath"
-        );
-    }
-
-    return configFilePath;
-}
-
-function loadTsconfig(configFilePath: string) {
     let config: ConfigLoaderResult;
     try {
-        config = loadConfig(configFilePath);
+        if (aliasConfigPath) {
+            if (isAbsolute(aliasConfigPath)) {
+                config = loadConfig(aliasConfigPath);
+            } else {
+                config = loadConfig(
+                    joinPath(eslintConfigPath, aliasConfigPath)
+                );
+            }
+        } else {
+            config = loadConfig(dirname(codeFilePath));
+        }
     } catch (error) {
         if (error instanceof SyntaxError) {
             throw new Error(
@@ -82,4 +71,4 @@ function loadAliasConfigs(
     );
 }
 
-export { AliasConfig, loadAliasConfigs, loadTsconfig, resolveTsconfigFilePath };
+export { AliasConfig, loadAliasConfigs, loadTsconfig };
