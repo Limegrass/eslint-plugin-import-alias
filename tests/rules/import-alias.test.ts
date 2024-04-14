@@ -35,45 +35,45 @@ const ruleTester = new RuleTester({
 });
 const cwd = process.cwd();
 
-const projectDirPart = "home";
+const projectDirPart = cwd;
 function runTests(platform: "win32" | "posix") {
     beforeAll(() => {
-        Object.assign(path, {
-            sep: path[platform].sep,
-            join: path[platform].join,
-        });
+        const projectDir = cwd;
 
-        const projectDir = path.join(
-            "/",
-            projectDirPart,
-            "user",
-            "git",
-            "project"
-        );
+        Object.assign(path, {
+            ...path[platform],
+            cwd: projectDir,
+        });
 
         mockLoadTsconfig.mockReturnValue({
             baseUrl: ".",
-            configFileAbsolutePath: path.join(projectDir, "tsconfig.json"),
+            configFileAbsolutePath: path[platform].join(
+                projectDir,
+                "tsconfig.json"
+            ),
         } as Partial<ConfigLoaderSuccessResult> as ConfigLoaderSuccessResult);
 
-        mockExistsSync.mockReturnValue(true);
+        mockExistsSync.mockImplementation((filePath: string) => {
+            return !filePath.includes("non-existing");
+        });
+
         mockLoadAliasConfig.mockReturnValue([
             {
                 alias: "#src",
                 path: {
-                    absolute: path.join(cwd, "src"),
+                    absolute: path[platform].join(projectDir, "src"),
                 },
             },
             {
                 alias: "#src-test",
                 path: {
-                    absolute: path.join(cwd, "src"),
+                    absolute: path[platform].join(projectDir, "src"),
                 },
             },
             {
                 alias: "#rules",
                 path: {
-                    absolute: path.join(cwd, "src", "rules"),
+                    absolute: path[platform].join(projectDir, "src", "rules"),
                 },
             },
         ]);
