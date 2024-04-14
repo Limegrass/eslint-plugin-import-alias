@@ -9,7 +9,12 @@ export const configs: Record<string, ESLint.ConfigData> = {
     recommended: {
         plugins: ["@limegrass/import-alias"],
         rules: {
-            "@limegrass/import-alias/import-alias": "error",
+            "@limegrass/import-alias/import-alias": [
+                "error",
+                {
+                    isAllowBaseUrlResolvedImport: false,
+                },
+            ],
         },
     },
 };
