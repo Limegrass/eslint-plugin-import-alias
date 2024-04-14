@@ -1,7 +1,7 @@
 import { loadAliasConfigs, loadTsconfig } from "#src/alias-config";
 import { rules } from "#src/index";
 import { RuleTester } from "eslint";
-import { existsSync } from "fs-extra";
+import { existsSync, readdirSync, PathLike } from "fs-extra";
 import { mocked } from "jest-mock";
 
 jest.mock("#src/alias-config");
@@ -10,6 +10,7 @@ jest.mock("fs-extra");
 const mockLoadAliasConfig = mocked(loadAliasConfigs);
 const mockLoadTsconfig = mocked(loadTsconfig);
 const mockExistsSync = mocked(existsSync);
+const mockReaddirSync = mocked(readdirSync);
 
 import path = require("path"); // object import required for overwriting
 import { ConfigLoaderSuccessResult } from "tsconfig-paths";
@@ -44,6 +45,14 @@ function runTests(platform: "win32" | "posix") {
             ...path[platform],
             cwd: projectDir,
         });
+
+        mockReaddirSync.mockImplementation(((filePath: PathLike) => {
+            const fp = filePath as string;
+            if (fp.includes("non-existing")) {
+                return undefined;
+            }
+            return ["potato.ts"];
+        }) as typeof readdirSync);
 
         mockLoadTsconfig.mockReturnValue({
             baseUrl: ".",
@@ -262,6 +271,23 @@ function runTests(platform: "win32" | "posix") {
                     },
                 ],
             },
+
+            // absolute path resolved import
+            {
+                code: `export * from "src/rules/potato";`,
+                filename: "src/foo/index.ts",
+            },
+
+            // absolute path resolved import when it isn't allowed, but path is not defined
+            {
+                code: `export * from "non-existing/rules/potato";`,
+                options: [
+                    {
+                        isAllowBaseUrlResolvedImport: false,
+                    },
+                ],
+                filename: "src/foo/index.ts",
+            },
         ],
         invalid: [
             // more specific alias
@@ -399,6 +425,31 @@ function runTests(platform: "win32" | "posix") {
                     },
                 ],
                 output: `export * from "#rules/potato"`,
+            },
+
+            // absolute path resolved import when it isn't allowed and path defined
+            {
+                code: `export * from "src/rules/potato";`,
+                errors: 1,
+                options: [
+                    {
+                        isAllowBaseUrlResolvedImport: false,
+                    },
+                ],
+                filename: "src/foo/index.ts",
+                output: `export * from "#rules/potato";`,
+            },
+
+            // absolute path resolved import when it isn't allowed and path defined
+            {
+                code: `export * from "other/rules/potato";`,
+                errors: 1, // errors with message, but no fix as they must add a tsconfig path
+                options: [
+                    {
+                        isAllowBaseUrlResolvedImport: false,
+                    },
+                ],
+                filename: "src/foo/index.ts",
             },
         ],
     });
@@ -591,6 +642,23 @@ function runTests(platform: "win32" | "posix") {
                     },
                 ],
             },
+
+            // absolute path resolved import
+            {
+                code: `export { Potato } from "src/rules/potato";`,
+                filename: "src/foo/index.ts",
+            },
+
+            // absolute path resolved import when it isn't allowed, but path is not defined
+            {
+                code: `export { Potato } from "non-existing/rules/potato";`,
+                options: [
+                    {
+                        isAllowBaseUrlResolvedImport: false,
+                    },
+                ],
+                filename: "src/foo/index.ts",
+            },
         ],
         invalid: [
             // more specific alias
@@ -728,6 +796,31 @@ function runTests(platform: "win32" | "posix") {
                     },
                 ],
                 output: `export { Potato } from "#rules/potato"`,
+            },
+
+            // absolute path resolved import when it isn't allowed and path defined
+            {
+                code: `export { Potato } from "src/rules/potato";`,
+                errors: 1,
+                options: [
+                    {
+                        isAllowBaseUrlResolvedImport: false,
+                    },
+                ],
+                filename: "src/foo/index.ts",
+                output: `export { Potato } from "#rules/potato";`,
+            },
+
+            // absolute path resolved import when it isn't allowed and path defined
+            {
+                code: `export { Potato } from "other/rules/potato";`,
+                errors: 1, // errors with message, but no fix as they must add a tsconfig path
+                options: [
+                    {
+                        isAllowBaseUrlResolvedImport: false,
+                    },
+                ],
+                filename: "src/foo/index.ts",
             },
         ],
     });
@@ -910,6 +1003,23 @@ function runTests(platform: "win32" | "posix") {
                     },
                 ],
             },
+
+            // absolute path resolved import
+            {
+                code: `import { Potato } from "src/rules/potato";`,
+                filename: "src/foo/index.ts",
+            },
+
+            // absolute path resolved import when it isn't allowed, but path is not defined
+            {
+                code: `import { Potato } from "non-existing/rules/potato";`,
+                options: [
+                    {
+                        isAllowBaseUrlResolvedImport: false,
+                    },
+                ],
+                filename: "src/foo/index.ts",
+            },
         ],
         invalid: [
             // more specific alias
@@ -1047,6 +1157,31 @@ function runTests(platform: "win32" | "posix") {
                     },
                 ],
                 output: `import { Potato } from "#rules/potato"`,
+            },
+
+            // absolute path resolved import when it isn't allowed and path defined
+            {
+                code: `import { Potato } from "src/rules/potato";`,
+                errors: 1,
+                options: [
+                    {
+                        isAllowBaseUrlResolvedImport: false,
+                    },
+                ],
+                filename: "src/foo/index.ts",
+                output: `import { Potato } from "#rules/potato";`,
+            },
+
+            // absolute path resolved import when it isn't allowed and path defined
+            {
+                code: `import { Potato } from "other/rules/potato";`,
+                errors: 1, // errors with message, but no fix as they must add a tsconfig path
+                options: [
+                    {
+                        isAllowBaseUrlResolvedImport: false,
+                    },
+                ],
+                filename: "src/foo/index.ts",
             },
         ],
     });
@@ -1230,6 +1365,23 @@ function runTests(platform: "win32" | "posix") {
                         },
                     ],
                 },
+
+                // absolute path resolved import
+                {
+                    code: `require("src/rules/potato");`,
+                    filename: "src/foo/index.ts",
+                },
+
+                // absolute path resolved import when it isn't allowed, but path is not defined
+                {
+                    code: `require("non-existing/rules/potato");`,
+                    options: [
+                        {
+                            isAllowBaseUrlResolvedImport: false,
+                        },
+                    ],
+                    filename: "src/foo/index.ts",
+                },
             ],
             invalid: [
                 // more specific alias
@@ -1366,6 +1518,31 @@ function runTests(platform: "win32" | "posix") {
                         },
                     ],
                     output: `require("#rules/potato")`,
+                },
+
+                // absolute path resolved import when it isn't allowed and path defined
+                {
+                    code: `require("src/rules/potato");`,
+                    errors: 1,
+                    options: [
+                        {
+                            isAllowBaseUrlResolvedImport: false,
+                        },
+                    ],
+                    filename: "src/foo/index.ts",
+                    output: `require("#rules/potato");`,
+                },
+
+                // absolute path resolved import when it isn't allowed and path defined
+                {
+                    code: `require("other/rules/potato");`,
+                    errors: 1, // errors with message, but no fix as they must add a tsconfig path
+                    options: [
+                        {
+                            isAllowBaseUrlResolvedImport: false,
+                        },
+                    ],
+                    filename: "src/foo/index.ts",
                 },
             ],
         });
@@ -1543,6 +1720,23 @@ function runTests(platform: "win32" | "posix") {
                         },
                     ],
                 },
+
+                // absolute path resolved import
+                {
+                    code: `jest.mock("src/rules/potato");`,
+                    filename: "src/foo/index.ts",
+                },
+
+                // absolute path resolved import when it isn't allowed, but path is not defined
+                {
+                    code: `jest.mock("non-existing/rules/potato");`,
+                    options: [
+                        {
+                            isAllowBaseUrlResolvedImport: false,
+                        },
+                    ],
+                    filename: "src/foo/index.ts",
+                },
             ],
             invalid: [
                 // more specific alias
@@ -1680,6 +1874,31 @@ function runTests(platform: "win32" | "posix") {
                         },
                     ],
                     output: `jest.mock("#rules/potato")`,
+                },
+
+                // absolute path resolved import when it isn't allowed and path defined
+                {
+                    code: `jest.mock("src/rules/potato");`,
+                    errors: 1,
+                    options: [
+                        {
+                            isAllowBaseUrlResolvedImport: false,
+                        },
+                    ],
+                    filename: "src/foo/index.ts",
+                    output: `jest.mock("#rules/potato");`,
+                },
+
+                // absolute path resolved import when it isn't allowed and path defined
+                {
+                    code: `jest.mock("other/rules/potato");`,
+                    errors: 1, // errors with message, but no fix as they must add a tsconfig path
+                    options: [
+                        {
+                            isAllowBaseUrlResolvedImport: false,
+                        },
+                    ],
+                    filename: "src/foo/index.ts",
                 },
             ],
         });
@@ -1878,6 +2097,29 @@ function runTests(platform: "win32" | "posix") {
                             },
                         ],
                     },
+
+                    // absolute path resolved import
+                    {
+                        code: `potato("src/rules/potato");`,
+                        options: [
+                            {
+                                aliasImportFunctions: ["potato"],
+                            },
+                        ],
+                        filename: "src/foo/index.ts",
+                    },
+
+                    // absolute path resolved import when it isn't allowed, but path is not defined
+                    {
+                        code: `potato("non-existing/rules/potato");`,
+                        options: [
+                            {
+                                aliasImportFunctions: ["potato"],
+                                isAllowBaseUrlResolvedImport: false,
+                            },
+                        ],
+                        filename: "src/foo/index.ts",
+                    },
                 ],
                 invalid: [
                     // more specific alias
@@ -2025,6 +2267,33 @@ function runTests(platform: "win32" | "posix") {
                             },
                         ],
                         output: `potato("#rules/potato")`,
+                    },
+
+                    // absolute path resolved import when it isn't allowed and path defined
+                    {
+                        code: `potato("src/rules/potato");`,
+                        errors: 1,
+                        options: [
+                            {
+                                aliasImportFunctions: ["potato"],
+                                isAllowBaseUrlResolvedImport: false,
+                            },
+                        ],
+                        filename: "src/foo/index.ts",
+                        output: `potato("#rules/potato");`,
+                    },
+
+                    // absolute path resolved import when it isn't allowed and path defined
+                    {
+                        code: `potato("other/rules/potato");`,
+                        errors: 1, // errors with message, but no fix as they must add a tsconfig path
+                        options: [
+                            {
+                                aliasImportFunctions: ["potato"],
+                                isAllowBaseUrlResolvedImport: false,
+                            },
+                        ],
+                        filename: "src/foo/index.ts",
                     },
                 ],
             }

@@ -6,7 +6,7 @@ import type {
     ImportDeclaration,
     Program,
 } from "estree";
-import { existsSync } from "fs-extra";
+import { existsSync, readdirSync } from "fs-extra";
 import type { JSONSchema4 } from "json-schema";
 import {
     dirname,
@@ -14,6 +14,7 @@ import {
     relative,
     resolve,
     sep as pathSep,
+    parse,
 } from "path";
 import slash from "slash";
 
@@ -175,6 +176,7 @@ type ImportAliasOptions = {
     aliasImportFunctions: string[];
     /** An array defining which paths can be allowed to used relative imports within it to defined depths. */
     relativeImportOverrides?: RelativeImportConfig[];
+    isAllowBaseUrlResolvedImport: boolean;
 };
 
 /**
@@ -240,6 +242,15 @@ const schemaProperties: Record<keyof ImportAliasOptions, JSONSchema4> = {
             ],
         },
     },
+    isAllowBaseUrlResolvedImport: {
+        type: "boolean",
+        description: [
+            "A boolean which determines whether you would like to allow absolute path module resolution",
+            "through TSConfig's baseUrl alone. When set to false, absolute imports that does not use an",
+            "associated path assignment will be considered invalid by this rule. Defaults to `true`",
+        ].join(" "),
+        default: true, // default true for backwards compatibility
+    },
 };
 
 const importAliasRule: Rule.RuleModule = {
@@ -296,6 +307,7 @@ const importAliasRule: Rule.RuleModule = {
             aliasImportFunctions = schemaProperties.aliasImportFunctions
                 .default as string[],
             relativeImportOverrides = [],
+            isAllowBaseUrlResolvedImport = true,
         }: ImportAliasOptions = context.options[0] || {}; // No idea what the other array values are
 
         let projectBaseDir: string;
@@ -336,17 +348,68 @@ const importAliasRule: Rule.RuleModule = {
                 absoluteDir
             );
 
-            return aliasSuggestion
-                ? {
-                      message: `import ${importModuleName} can be written as ${aliasSuggestion}`,
-                      fix: (fixer: Rule.RuleFixer) => {
-                          return fixer.replaceTextRange(
-                              quotelessRange,
-                              aliasSuggestion
-                          );
-                      },
-                  }
-                : undefined;
+            if (aliasSuggestion) {
+                return {
+                    message: `import ${importModuleName} can be written as ${aliasSuggestion}`,
+                    fix: (fixer: Rule.RuleFixer) => {
+                        return fixer.replaceTextRange(
+                            quotelessRange,
+                            aliasSuggestion
+                        );
+                    },
+                };
+            }
+
+            // if no alias found, but user did not want to allow baseUrl resolved absolute imports
+            // check if it would exist as a baseUrl absolute import. If so, make suggestions.
+            if (!isAllowBaseUrlResolvedImport) {
+                const joinedModulePath = joinPath(
+                    projectBaseDir,
+                    importModuleName
+                );
+                let moduleExists = false;
+                try {
+                    const dirContents = readdirSync(dirname(joinedModulePath));
+                    const moduleName = importModuleName.split("/").pop();
+                    moduleExists = dirContents.some((filename) => {
+                        return parse(filename).name === moduleName;
+                    });
+                } catch (_) {
+                    // module does not exist, do nothing as it is probably a dependency import
+                }
+
+                if (moduleExists) {
+                    const aliasConfig = getBestAliasConfig(
+                        aliasesResult,
+                        undefined,
+                        joinedModulePath
+                    );
+
+                    if (aliasConfig) {
+                        const suggestedPathImport = slash(
+                            joinedModulePath.replace(
+                                aliasConfig.path.absolute,
+                                aliasConfig.alias
+                            )
+                        );
+                        return {
+                            message: `import ${importModuleName} can be written as ${suggestedPathImport}`,
+                            fix: (fixer: Rule.RuleFixer) => {
+                                return fixer.replaceTextRange(
+                                    quotelessRange,
+                                    suggestedPathImport
+                                );
+                            },
+                        };
+                    } else {
+                        return {
+                            message: `import ${importModuleName} is resolved from the TSConfig base URL without a path alias`,
+                        };
+                    }
+                }
+            }
+
+            return undefined;
         };
 
         const aliasModuleDeclarations = (
