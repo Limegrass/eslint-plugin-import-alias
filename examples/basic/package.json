@@ -1,8 +1,7 @@
 {
     "main": "build/index.js",
     "scripts": {
-        "build": "tsc",
-        "prepare": "npm run build"
+        "build": "tsc"
     },
     "devDependencies": {
         "@types/node": "^20",
@@ -10,7 +9,7 @@
         "@typescript-eslint/parser": "^5",
         "eslint": "^8",
         "eslint-import-resolver-typescript": "^3",
-        "@limegrass/eslint-plugin-import-alias": "file:..",
+        "@limegrass/eslint-plugin-import-alias": "file:../../build",
         "typescript": "^5"
     },
     "name": "@limegrass/eslint-plugin-import-alias.example.basic",
