@@ -24,6 +24,12 @@ function isPermittedRelativeImport(
     filepath: string,
     projectBaseDir: string
 ) {
+    const isRelativeImport =
+        importModuleName.length > 0 && importModuleName[0] !== ".";
+    if (isRelativeImport) {
+        return false;
+    }
+
     const importParts = importModuleName.split("/");
     const relativeDepth = importParts.filter(
         (moduleNamePart) => moduleNamePart === ".."

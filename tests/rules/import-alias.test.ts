@@ -451,6 +451,25 @@ function runTests(platform: "win32" | "posix") {
                 ],
                 filename: "src/foo/index.ts",
             },
+
+            // doesn't conflict with relativeImportOverrides
+            {
+                code: `export * from "src/potato";`,
+                errors: 1,
+                options: [
+                    {
+                        isAllowBaseUrlResolvedImport: false,
+                        relativeImportOverrides: [
+                            {
+                                path: ".",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+                filename: "src/rules/test.ts",
+                output: `export * from "#src/potato";`,
+            },
         ],
     });
 
@@ -822,6 +841,25 @@ function runTests(platform: "win32" | "posix") {
                 ],
                 filename: "src/foo/index.ts",
             },
+
+            // doesn't conflict with relativeImportOverrides
+            {
+                code: `export { Potato } from "src/potato";`,
+                errors: 1,
+                options: [
+                    {
+                        isAllowBaseUrlResolvedImport: false,
+                        relativeImportOverrides: [
+                            {
+                                path: ".",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+                filename: "src/rules/test.ts",
+                output: `export { Potato } from "#src/potato";`,
+            },
         ],
     });
 
@@ -1182,6 +1220,25 @@ function runTests(platform: "win32" | "posix") {
                     },
                 ],
                 filename: "src/foo/index.ts",
+            },
+
+            // doesn't conflict with relativeImportOverrides
+            {
+                code: `import { Potato } from "src/potato";`,
+                errors: 1,
+                options: [
+                    {
+                        isAllowBaseUrlResolvedImport: false,
+                        relativeImportOverrides: [
+                            {
+                                path: ".",
+                                depth: 0,
+                            },
+                        ],
+                    },
+                ],
+                filename: "src/rules/test.ts",
+                output: `import { Potato } from "#src/potato";`,
             },
         ],
     });
@@ -1544,6 +1601,25 @@ function runTests(platform: "win32" | "posix") {
                     ],
                     filename: "src/foo/index.ts",
                 },
+
+                // doesn't conflict with relativeImportOverrides
+                {
+                    code: `require("src/potato");`,
+                    errors: 1,
+                    options: [
+                        {
+                            isAllowBaseUrlResolvedImport: false,
+                            relativeImportOverrides: [
+                                {
+                                    path: ".",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                    filename: "src/rules/test.ts",
+                    output: `require("#src/potato");`,
+                },
             ],
         });
 
@@ -1899,6 +1975,25 @@ function runTests(platform: "win32" | "posix") {
                         },
                     ],
                     filename: "src/foo/index.ts",
+                },
+
+                // doesn't conflict with relativeImportOverrides
+                {
+                    code: `jest.mock("src/potato");`,
+                    errors: 1,
+                    options: [
+                        {
+                            isAllowBaseUrlResolvedImport: false,
+                            relativeImportOverrides: [
+                                {
+                                    path: ".",
+                                    depth: 0,
+                                },
+                            ],
+                        },
+                    ],
+                    filename: "src/rules/test.ts",
+                    output: `jest.mock("#src/potato");`,
                 },
             ],
         });
@@ -2294,6 +2389,26 @@ function runTests(platform: "win32" | "posix") {
                             },
                         ],
                         filename: "src/foo/index.ts",
+                    },
+
+                    // doesn't conflict with relativeImportOverrides
+                    {
+                        code: `potato("src/potato");`,
+                        errors: 1,
+                        options: [
+                            {
+                                aliasImportFunctions: ["potato"],
+                                isAllowBaseUrlResolvedImport: false,
+                                relativeImportOverrides: [
+                                    {
+                                        path: ".",
+                                        depth: 0,
+                                    },
+                                ],
+                            },
+                        ],
+                        filename: "src/rules/test.ts",
+                        output: `potato("#src/potato");`,
                     },
                 ],
             }
