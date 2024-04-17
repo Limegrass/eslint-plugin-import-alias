@@ -28,6 +28,7 @@ function isPermittedRelativeImport(
     const relativeDepth = importParts.filter(
         (moduleNamePart) => moduleNamePart === ".."
     ).length;
+    const relativeFilepath = relative(projectBaseDir, filepath);
 
     const configs = [...relativeImportOverrides];
     configs.sort((a, b) => b.depth - a.depth); // rank depth descending
@@ -35,9 +36,7 @@ function isPermittedRelativeImport(
         if (
             ("path" in config && filepath.includes(resolve(config.path))) ||
             ("pattern" in config &&
-                new RegExp(config.pattern).test(
-                    relative(projectBaseDir, filepath)
-                ))
+                new RegExp(config.pattern).test(relativeFilepath))
         ) {
             return relativeDepth <= config.depth;
         }
