@@ -8,7 +8,8 @@
         "esModuleInterop": true,
         "outDir": "./build",
         "paths": {
-            "#src/*": ["src/*"]
+            "#src/*": ["src/*"],
+            "#root/*": ["*"]
         },
         "resolveJsonModule": true,
         "strictNullChecks": true

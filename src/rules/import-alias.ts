@@ -175,7 +175,7 @@ interface RelativeGlobConfig {
 
 type RelativeImportConfig = RelativePathConfig | RelativeGlobConfig;
 
-type ImportAliasOptions = {
+export type ImportAliasOptions = {
     aliasConfigPath?: string;
     // TODO: A fuller solution might need a property for the position, but not sure if needed
     aliasImportFunctions: string[];

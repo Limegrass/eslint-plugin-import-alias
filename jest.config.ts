@@ -9,6 +9,7 @@ const config: Config.InitialOptions = {
     },
     moduleNameMapper: {
         "#src/(.*)": "<rootDir>/src/$1",
+        "#root/(.*)": "<rootDir>/$1",
     },
     moduleFileExtensions: ["js", "ts"],
     globals: {
