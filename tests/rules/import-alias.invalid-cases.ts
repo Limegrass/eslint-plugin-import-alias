@@ -237,19 +237,19 @@ export function getInvalidTestCaseParams(
 
 export function generateInvalidTestCase(
     testCaseKind: keyof typeof FORMAT_STRING,
-    params: InvalidTestCaseParams
+    params: InvalidTestCaseParams,
 ): RuleTester.InvalidTestCase {
     const inputCode = formatCode(
         FORMAT_STRING[testCaseKind],
         params.import.input
     );
-    const outputCode = formatCode(
+    const outputCode = params.import.output ? formatCode(
         FORMAT_STRING[testCaseKind],
         // RuleTester appears to default to the input string
         // only if output is explicitly not set (and NOT undefined).
         // This mimicks that behavior.
-        params.import.output ?? params.import.input
-    );
+        params.import.output
+    ): null;
 
     const testCase: RuleTester.InvalidTestCase = {
         code: inputCode,
@@ -258,7 +258,7 @@ export function generateInvalidTestCase(
         name: `${params.description} [${inputCode}]`,
         options: params.options,
         output: outputCode,
-        only: params.only,
+        only: params.only ?? true,
     };
 
     return testCase;

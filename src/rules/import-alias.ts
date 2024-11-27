@@ -16,13 +16,13 @@ import {
     sep as pathSep,
     parse,
 } from "path";
-import slash from "slash";
+import slash from "#src/slash";
 
 function isPermittedRelativeImport(
     importModuleName: string,
     relativeImportOverrides: RelativeImportConfig[],
     filepath: string,
-    projectBaseDir: string
+    projectBaseDir: string,
 ) {
     const isRelativeImport =
         importModuleName.length > 0 && importModuleName[0] !== ".";
@@ -32,7 +32,7 @@ function isPermittedRelativeImport(
 
     const importParts = importModuleName.split("/");
     const relativeDepth = importParts.filter(
-        (moduleNamePart) => moduleNamePart === ".."
+        (moduleNamePart) => moduleNamePart === "..",
     ).length;
     const relativeFilepath = relative(projectBaseDir, filepath);
 
@@ -53,13 +53,13 @@ function isPermittedRelativeImport(
 function getAliasSuggestion(
     importModuleName: string,
     aliasConfigs: AliasConfig[],
-    absoluteDir: string
+    absoluteDir: string,
 ) {
     const currentAliasConfig: AliasConfig | undefined = aliasConfigs.find(
         ({ alias }) => {
             const [baseModulePath] = importModuleName.split("/");
             return baseModulePath === alias;
-        }
+        },
     );
 
     let absoluteModulePath: string | undefined = undefined;
@@ -75,15 +75,15 @@ function getAliasSuggestion(
         const bestAliasConfig = getBestAliasConfig(
             aliasConfigs,
             currentAliasConfig,
-            absoluteModulePath
+            absoluteModulePath,
         );
 
         if (bestAliasConfig && bestAliasConfig !== currentAliasConfig) {
             return slash(
                 absoluteModulePath.replace(
                     bestAliasConfig.path.absolute,
-                    bestAliasConfig.alias
-                )
+                    bestAliasConfig.alias,
+                ),
             );
         }
     }
@@ -92,7 +92,7 @@ function getAliasSuggestion(
 function getBestAliasConfig(
     aliasConfigs: AliasConfig[],
     currentAlias: AliasConfig | undefined,
-    absoluteModulePath: string
+    absoluteModulePath: string,
 ) {
     const importPathParts = absoluteModulePath.split(pathSep);
     return aliasConfigs.reduce((currentBest, potentialAlias) => {
@@ -101,7 +101,7 @@ function getBestAliasConfig(
             (isValid, aliasPathPart, index) => {
                 return isValid && importPathParts[index] === aliasPathPart;
             },
-            true
+            true,
         );
         const isMoreSpecificAlias =
             !currentBest ||
@@ -266,7 +266,6 @@ const importAliasRule: Rule.RuleModule = {
             category: "Suggestions",
             recommended: true,
             url: "https://github.com/limegrass/eslint-plugin-import-alias/blob/HEAD/docs/rules/import-alias.md",
-            suggestion: true,
         },
         fixable: "code",
         schema: [
@@ -276,6 +275,7 @@ const importAliasRule: Rule.RuleModule = {
             },
         ],
         type: "suggestion",
+        hasSuggestions: true,
     },
 
     create: (context: Rule.RuleContext) => {
@@ -294,16 +294,16 @@ const importAliasRule: Rule.RuleModule = {
          * We can also otherwise resolve the tsconfig/jsconfig from the dirname(filepath),
          * which tsconfig-paths will attempt automatically for `tsconfig.json` and `jsconfig.json`
          */
-        const cwd = context.getCwd();
+        const cwd = context.cwd;
 
-        const filepath = resolve(context.getFilename());
+        const filepath = resolve(context.filename);
         const absoluteDir = dirname(filepath);
 
         if (!existsSync(absoluteDir)) {
             return reportProgramError(
                 "a filepath must be provided, try with --stdin-filename, " +
                     "call eslint on a file, " +
-                    "or save your buffer as a file and restart eslint in your editor."
+                    "or save your buffer as a file and restart eslint in your editor.",
             );
         }
 
@@ -331,7 +331,7 @@ const importAliasRule: Rule.RuleModule = {
 
         const getReportDescriptor = (
             [moduleStart, moduleEnd]: [number, number],
-            importModuleName: string
+            importModuleName: string,
         ) => {
             // preserve user quote style
             const quotelessRange: AST.Range = [moduleStart + 1, moduleEnd - 1];
@@ -341,7 +341,7 @@ const importAliasRule: Rule.RuleModule = {
                     importModuleName,
                     relativeImportOverrides,
                     filepath,
-                    projectBaseDir
+                    projectBaseDir,
                 )
             ) {
                 return undefined;
@@ -350,7 +350,7 @@ const importAliasRule: Rule.RuleModule = {
             const aliasSuggestion = getAliasSuggestion(
                 importModuleName,
                 aliasesResult,
-                absoluteDir
+                absoluteDir,
             );
 
             if (aliasSuggestion) {
@@ -359,7 +359,7 @@ const importAliasRule: Rule.RuleModule = {
                     fix: (fixer: Rule.RuleFixer) => {
                         return fixer.replaceTextRange(
                             quotelessRange,
-                            aliasSuggestion
+                            aliasSuggestion,
                         );
                     },
                 };
@@ -370,7 +370,7 @@ const importAliasRule: Rule.RuleModule = {
             if (!isAllowBaseUrlResolvedImport) {
                 const joinedModulePath = joinPath(
                     projectBaseDir,
-                    importModuleName
+                    importModuleName,
                 );
                 let moduleExists = false;
                 try {
@@ -387,22 +387,22 @@ const importAliasRule: Rule.RuleModule = {
                     const aliasConfig = getBestAliasConfig(
                         aliasesResult,
                         undefined,
-                        joinedModulePath
+                        joinedModulePath,
                     );
 
                     if (aliasConfig) {
                         const suggestedPathImport = slash(
                             joinedModulePath.replace(
                                 aliasConfig.path.absolute,
-                                aliasConfig.alias
-                            )
+                                aliasConfig.alias,
+                            ),
                         );
                         return {
                             message: `import ${importModuleName} can be written as ${suggestedPathImport}`,
                             fix: (fixer: Rule.RuleFixer) => {
                                 return fixer.replaceTextRange(
                                     quotelessRange,
-                                    suggestedPathImport
+                                    suggestedPathImport,
                                 );
                             },
                         };
@@ -421,12 +421,12 @@ const importAliasRule: Rule.RuleModule = {
             node:
                 | ImportDeclaration
                 | ExportAllDeclaration
-                | ExportNamedDeclaration
+                | ExportNamedDeclaration,
         ) => {
             if (node.source?.range && typeof node.source.value === "string") {
                 const suggestion = getReportDescriptor(
                     node.source.range,
-                    node.source.value
+                    node.source.value,
                 );
 
                 if (suggestion) {
@@ -455,7 +455,7 @@ const importAliasRule: Rule.RuleModule = {
                     ) {
                         const suggestion = getReportDescriptor(
                             importNameNode.range,
-                            importNameNode.value
+                            importNameNode.value,
                         );
 
                         if (suggestion) {

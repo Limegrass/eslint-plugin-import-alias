@@ -318,15 +318,16 @@ export function getValidTestCaseParams(
 
 export function generateValidTestCase(
     testCaseKind: keyof typeof FORMAT_STRING,
-    params: ValidTestCaseParams
+    params: ValidTestCaseParams,
+    index?: number
 ): RuleTester.ValidTestCase {
     const code = formatCode(FORMAT_STRING[testCaseKind], params.import.input);
 
     return {
-        code,
+        code:`${code} ${index}`,
         name: `${params.description} [${code}]`,
         filename: params.sourceFilePath,
         options: params.options,
-        only: params.only,
+        only: params.only ?? true,
     };
 }

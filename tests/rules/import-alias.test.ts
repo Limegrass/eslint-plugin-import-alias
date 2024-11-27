@@ -38,7 +38,7 @@ jest.mock("path", () => {
             // required when running the tests on windows
             join: (...args: string[]) => {
                 return original.posix.join(
-                    ...args.map((s: string) => s.replace(/\\/g, "/"))
+                    ...args.map((s: string) => s.replace(/\\/g, "/")),
                 );
             },
         },
@@ -46,7 +46,9 @@ jest.mock("path", () => {
 });
 
 const ruleTester = new RuleTester({
-    parserOptions: { ecmaVersion: 2015, sourceType: "module" },
+    languageOptions: {
+        parserOptions: { ecmaVersion: 2015, sourceType: "module" },
+    },
 });
 const cwd = process.cwd();
 
@@ -68,7 +70,7 @@ function runTests(platform: "win32" | "posix") {
             baseUrl: ".",
             configFileAbsolutePath: path[platform].join(
                 projectDir,
-                "tsconfig.json"
+                "tsconfig.json",
             ),
         } as Partial<ConfigLoaderSuccessResult> as ConfigLoaderSuccessResult);
 
@@ -80,8 +82,8 @@ function runTests(platform: "win32" | "posix") {
 
     ruleTester.run("ExportAllDeclaration", rules["import-alias"], {
         valid: [
-            ...getValidTestCaseParams(NO_OPTION_OVERRIDES).map((params) =>
-                generateValidTestCase("ExportAllDecalaration", params)
+            ...getValidTestCaseParams(NO_OPTION_OVERRIDES).map((params, index) =>
+                generateValidTestCase("ExportAllDecalaration", params, index),
             ),
             {
                 name: "source-less default export [export default TestFn = () => {}]",
@@ -92,17 +94,17 @@ function runTests(platform: "win32" | "posix") {
         invalid: [
             ...getInvalidTestCaseParams(
                 projectDirPart,
-                NO_OPTION_OVERRIDES
+                NO_OPTION_OVERRIDES,
             ).map((params) =>
-                generateInvalidTestCase("ExportAllDecalaration", params)
+                generateInvalidTestCase("ExportAllDecalaration", params),
             ),
         ],
     });
 
     ruleTester.run("ExportNamedDeclaration", rules["import-alias"], {
         valid: [
-            ...getValidTestCaseParams(NO_OPTION_OVERRIDES).map((params) =>
-                generateValidTestCase("ExportNamedDecalaration", params)
+            ...getValidTestCaseParams(NO_OPTION_OVERRIDES).map((params, index) =>
+                generateValidTestCase("ExportNamedDecalaration", params, index),
             ),
             {
                 name: `source-less named export inline [export const TestFn = () => {}]`,
@@ -118,25 +120,25 @@ function runTests(platform: "win32" | "posix") {
         invalid: [
             ...getInvalidTestCaseParams(
                 projectDirPart,
-                NO_OPTION_OVERRIDES
+                NO_OPTION_OVERRIDES,
             ).map((params) =>
-                generateInvalidTestCase("ExportNamedDecalaration", params)
+                generateInvalidTestCase("ExportNamedDecalaration", params),
             ),
         ],
     });
 
     ruleTester.run("ImportDeclaration", rules["import-alias"], {
         valid: [
-            ...getValidTestCaseParams(NO_OPTION_OVERRIDES).map((params) =>
-                generateValidTestCase("ImportDeclaration", params)
+            ...getValidTestCaseParams(NO_OPTION_OVERRIDES).map((params, index) =>
+                generateValidTestCase("ImportDeclaration", params, index),
             ),
         ],
         invalid: [
             ...getInvalidTestCaseParams(
                 projectDirPart,
-                NO_OPTION_OVERRIDES
+                NO_OPTION_OVERRIDES,
             ).map((params) =>
-                generateInvalidTestCase("ImportDeclaration", params)
+                generateInvalidTestCase("ImportDeclaration", params),
             ),
         ],
     });
@@ -144,16 +146,16 @@ function runTests(platform: "win32" | "posix") {
     describe("CallExpression", () => {
         ruleTester.run("`require` support by default", rules["import-alias"], {
             valid: [
-                ...getValidTestCaseParams(NO_OPTION_OVERRIDES).map((params) =>
-                    generateValidTestCase("RequireCallExpression", params)
+                ...getValidTestCaseParams(NO_OPTION_OVERRIDES).map((params, index) =>
+                    generateValidTestCase("RequireCallExpression", params, index),
                 ),
             ],
             invalid: [
                 ...getInvalidTestCaseParams(
                     projectDirPart,
-                    NO_OPTION_OVERRIDES
+                    NO_OPTION_OVERRIDES,
                 ).map((params) =>
-                    generateInvalidTestCase("RequireCallExpression", params)
+                    generateInvalidTestCase("RequireCallExpression", params),
                 ),
             ],
         });
@@ -164,25 +166,26 @@ function runTests(platform: "win32" | "posix") {
             {
                 valid: [
                     ...getValidTestCaseParams(NO_OPTION_OVERRIDES).map(
-                        (params) =>
+                        (params, index) =>
                             generateValidTestCase(
                                 "JestMockCallExpression",
-                                params
-                            )
+                                params,
+                                index
+                            ),
                     ),
                 ],
                 invalid: [
                     ...getInvalidTestCaseParams(
                         projectDirPart,
-                        NO_OPTION_OVERRIDES
+                        NO_OPTION_OVERRIDES,
                     ).map((params) =>
                         generateInvalidTestCase(
                             "JestMockCallExpression",
-                            params
-                        )
+                            params,
+                        ),
                     ),
                 ],
-            }
+            },
         );
 
         const customCallExpressionOptionOverrides = {
@@ -191,17 +194,17 @@ function runTests(platform: "win32" | "posix") {
         ruleTester.run("custom CallExpression support", rules["import-alias"], {
             valid: [
                 ...getValidTestCaseParams(
-                    customCallExpressionOptionOverrides
-                ).map((params) =>
-                    generateValidTestCase("CustomCallExpression", params)
+                    customCallExpressionOptionOverrides,
+                ).map((params, index) =>
+                    generateValidTestCase("CustomCallExpression", params, index),
                 ),
             ],
             invalid: [
                 ...getInvalidTestCaseParams(
                     projectDirPart,
-                    customCallExpressionOptionOverrides
+                    customCallExpressionOptionOverrides,
                 ).map((params) =>
-                    generateInvalidTestCase("CustomCallExpression", params)
+                    generateInvalidTestCase("CustomCallExpression", params),
                 ),
             ],
         });
