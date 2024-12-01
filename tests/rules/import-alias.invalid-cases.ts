@@ -20,7 +20,7 @@ type InvalidTestCaseParams = {
 /** These configurations are based on the test setup in the import-alias.config test file */
 export function getInvalidTestCaseParams(
     fileSystemPath: string,
-    optionsOverrides: Partial<ImportAliasOptions>
+    optionsOverrides: Partial<ImportAliasOptions>,
 ): InvalidTestCaseParams[] {
     const baseParams: InvalidTestCaseParams[] = [
         {
@@ -237,18 +237,18 @@ export function getInvalidTestCaseParams(
 
 export function generateInvalidTestCase(
     testCaseKind: keyof typeof FORMAT_STRING,
-    params: InvalidTestCaseParams
+    params: InvalidTestCaseParams,
 ): RuleTester.InvalidTestCase {
     const inputCode = formatCode(
         FORMAT_STRING[testCaseKind],
-        params.import.input
+        params.import.input,
     );
     const outputCode = formatCode(
         FORMAT_STRING[testCaseKind],
         // RuleTester appears to default to the input string
         // only if output is explicitly not set (and NOT undefined).
         // This mimicks that behavior.
-        params.import.output ?? params.import.input
+        params.import.output ?? params.import.input,
     );
 
     const testCase: RuleTester.InvalidTestCase = {

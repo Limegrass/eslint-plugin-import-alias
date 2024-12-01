@@ -4,13 +4,13 @@ Encourage use of defined aliases in TSConfig/JSConfig through ESLint.
 
 ## Why
 
--   Automatic imports by tsserver resolve to relative paths that can be normalized.
--   It's easier to refactor by finding and replacing an absolute module path
-    without worrying about crafting the regex for `../` and `./`
+- Automatic imports by tsserver resolve to relative paths that can be normalized.
+- It's easier to refactor by finding and replacing an absolute module path
+  without worrying about crafting the regex for `../` and `./`
 
 ## Requirements
 
--   Node 14+
+- Node 14+
 
 ## Install
 
@@ -32,8 +32,8 @@ Check the [rules documentation][docs-import-alias] for further configuration.
 {
     "plugins": ["@limegrass/import-alias"],
     "rules": {
-        "@limegrass/import-alias/import-alias": "error"
-    }
+        "@limegrass/import-alias/import-alias": "error",
+    },
 }
 ```
 
@@ -44,8 +44,8 @@ The configuration above is also equivalent to
 {
     "extends": [
         // ... - your other extends, such as `"eslint:recommended"`
-        "plugin:@limegrass/import-alias/recommended"
-    ]
+        "plugin:@limegrass/import-alias/recommended",
+    ],
 }
 ```
 

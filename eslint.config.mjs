@@ -26,8 +26,8 @@ export default [
             "plugin:@typescript-eslint/recommended",
             "plugin:import/recommended",
             "plugin:import/typescript",
-            "prettier",
             "plugin:@limegrass/import-alias/recommended",
+            "prettier",
         ),
     ),
     {

@@ -19,7 +19,7 @@ type ValidTestCaseParams = {
 
 /** These configurations are based on the test setup in the import-alias.config test file */
 export function getValidTestCaseParams(
-    optionsOverrides: Partial<ImportAliasOptions>
+    optionsOverrides: Partial<ImportAliasOptions>,
 ): ValidTestCaseParams[] {
     const baseParams: ValidTestCaseParams[] = [
         {
@@ -318,7 +318,7 @@ export function getValidTestCaseParams(
 
 export function generateValidTestCase(
     testCaseKind: keyof typeof FORMAT_STRING,
-    params: ValidTestCaseParams
+    params: ValidTestCaseParams,
 ): RuleTester.ValidTestCase {
     const code = formatCode(FORMAT_STRING[testCaseKind], params.import.input);
 

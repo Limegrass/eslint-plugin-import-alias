@@ -17,7 +17,7 @@ type AliasConfig = {
 function loadTsconfig(
     eslintConfigPath: string,
     aliasConfigPath: string | undefined,
-    codeFilePath: string
+    codeFilePath: string,
 ) {
     let config: ConfigLoaderResult;
     try {
@@ -26,7 +26,7 @@ function loadTsconfig(
                 config = loadConfig(aliasConfigPath);
             } else {
                 config = loadConfig(
-                    joinPath(eslintConfigPath, aliasConfigPath)
+                    joinPath(eslintConfigPath, aliasConfigPath),
                 );
             }
         } else {
@@ -35,7 +35,7 @@ function loadTsconfig(
     } catch (error) {
         if (error instanceof SyntaxError) {
             throw new Error(
-                `SyntaxError in TSConfig/JSConfig: ${error.message}`
+                `SyntaxError in TSConfig/JSConfig: ${error.message}`,
             );
         }
         throw error;
@@ -43,7 +43,7 @@ function loadTsconfig(
 
     if (config.resultType !== "success") {
         throw new Error(
-            `validate tsconfig or jsconfig provided and ensure compilerOptions.baseUrl is set: ${config.message}`
+            `validate tsconfig or jsconfig provided and ensure compilerOptions.baseUrl is set: ${config.message}`,
         );
     }
 
@@ -52,7 +52,7 @@ function loadTsconfig(
 
 function loadAliasConfigs(
     config: ConfigLoaderSuccessResult,
-    projectBaseDir: string
+    projectBaseDir: string,
 ): AliasConfig[] {
     return Object.entries(config.paths).reduce(
         (configs, [aliasGlob, aliasPaths]) => {
@@ -67,7 +67,7 @@ function loadAliasConfigs(
             });
             return configs;
         },
-        [] as AliasConfig[]
+        [] as AliasConfig[],
     );
 }
 

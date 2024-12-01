@@ -30,7 +30,7 @@ export function mockReaddir(filepath: string) {
 export function getMockAliasConfig(
     pathModule: typeof path,
     platform: "win32" | "posix",
-    projectDir: string
+    projectDir: string,
 ) {
     return [
         {
@@ -51,7 +51,7 @@ export function getMockAliasConfig(
                 absolute: pathModule[platform].join(
                     projectDir,
                     "src",
-                    "sub-directory"
+                    "sub-directory",
                 ),
             },
         },

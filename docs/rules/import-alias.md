@@ -11,9 +11,9 @@ Given the following `tsconfig.json`
         // ...
         "paths": {
             "#src/*": ["src/*"],
-            "#rules/*": ["src/rules/*"]
-        }
-    }
+            "#rules/*": ["src/rules/*"],
+        },
+    },
 }
 ```
 
@@ -55,10 +55,10 @@ parameter of a function named `potato` for aliasing.
         "@limegrass/import-alias/import-alias": [
             "error",
             {
-                "aliasImportFunctions": ["require", "mock", "potato"]
-            }
-        ]
-    }
+                "aliasImportFunctions": ["require", "mock", "potato"],
+            },
+        ],
+    },
 }
 ```
 
@@ -79,10 +79,10 @@ configuration key. An example for a tsconfig found in a `config` folder of a pro
         "@limegrass/import-alias/import-alias": [
             "error",
             {
-                "aliasConfigPath": "config/tsconfig.json"
-            }
-        ]
-    }
+                "aliasConfigPath": "config/tsconfig.json",
+            },
+        ],
+    },
 }
 ```
 
@@ -110,10 +110,10 @@ The follow example would allow sibling imports for the entire project.
         "@limegrass/import-alias/import-alias": [
             "error",
             {
-                "relativeImportOverrides": [{ "path": ".", "depth": 0 }]
-            }
-        ]
-    }
+                "relativeImportOverrides": [{ "path": ".", "depth": 0 }],
+            },
+        ],
+    },
 }
 ```
 
