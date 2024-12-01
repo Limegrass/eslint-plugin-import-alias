@@ -13,7 +13,6 @@ const config: Config.InitialOptions = {
             },
         ],
     },
-    // transformIgnorePatterns: ["node_modules/(?!(@eslint))"],
     moduleNameMapper: {
         "#src/(.*)": "<rootDir>/src/$1",
         "#root/(.*)": "<rootDir>/$1",
