@@ -135,7 +135,7 @@ export function getValidTestCaseParams(
                 {
                     relativeImportOverrides: [
                         {
-                            pattern: `code.ts$`,
+                            pattern: `.`,
                             depth: 0,
                         },
                     ],
@@ -170,7 +170,7 @@ export function getValidTestCaseParams(
                 {
                     relativeImportOverrides: [
                         {
-                            pattern: `code.ts$`,
+                            pattern: `.`,
                             depth: 1,
                         },
                     ],
