@@ -55,7 +55,8 @@ export function getValidTestCaseParams(
         },
 
         {
-            description: "depth 0 relative module path with override for all",
+            description:
+                "depth 0 relative module path with override for all project files",
             sourceFilePath: "src/sub-directory/code.ts",
             import: {
                 input: `./${IMPORTED_MODULE_NAME}`,
@@ -90,7 +91,8 @@ export function getValidTestCaseParams(
             ],
         },
         {
-            description: "depth 1 relative module path with override for all",
+            description:
+                "depth 1 relative module path with override for all project files",
             sourceFilePath: "src/sub-directory/code.ts",
             import: {
                 input: `../${IMPORTED_MODULE_NAME}`,
@@ -126,7 +128,8 @@ export function getValidTestCaseParams(
         },
 
         {
-            description: "depth 0 relative module path with override for all",
+            description:
+                "depth 0 relative module path with override for all project files",
             sourceFilePath: "src/code.ts",
             import: {
                 input: `./${IMPORTED_MODULE_NAME}`,
@@ -161,7 +164,8 @@ export function getValidTestCaseParams(
             ],
         },
         {
-            description: "depth 1 relative module path with override for all",
+            description:
+                "depth 1 relative module path with override for all project files",
             sourceFilePath: "src/sub-directory/code.ts",
             import: {
                 input: `../${IMPORTED_MODULE_NAME}`,
