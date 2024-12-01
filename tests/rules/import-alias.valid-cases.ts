@@ -322,11 +322,16 @@ export function generateValidTestCase(
 ): RuleTester.ValidTestCase {
     const code = formatCode(FORMAT_STRING[testCaseKind], params.import.input);
 
-    return {
+    const testCase: RuleTester.ValidTestCase = {
         code,
         name: `${params.description} [${code}]`,
         filename: params.sourceFilePath,
         options: params.options,
-        only: params.only,
     };
+
+    if (params.only) {
+        testCase.only = params.only;
+    }
+
+    return testCase;
 }

@@ -257,9 +257,12 @@ export function generateInvalidTestCase(
         filename: params.sourceFilePath,
         name: `${params.description} [${inputCode}]`,
         options: params.options,
-        output: outputCode,
-        only: params.only,
+        output: outputCode !== inputCode ? outputCode : null,
     };
+
+    if (params.only) {
+        testCase.only = params.only;
+    }
 
     return testCase;
 }

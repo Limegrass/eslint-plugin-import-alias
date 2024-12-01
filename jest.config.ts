@@ -5,19 +5,20 @@ const config: Config.InitialOptions = {
     testMatch: ["<rootDir>/tests/**/*.test.ts"],
     preset: "ts-jest",
     transform: {
-        "^.+\\.(js|ts)$": "ts-jest",
+        "^.+\\.(js|ts)$": [
+            "ts-jest",
+            {
+                isolatedModules: true,
+                diagnostics: false,
+            },
+        ],
     },
+    // transformIgnorePatterns: ["node_modules/(?!(@eslint))"],
     moduleNameMapper: {
         "#src/(.*)": "<rootDir>/src/$1",
         "#root/(.*)": "<rootDir>/$1",
     },
     moduleFileExtensions: ["js", "ts"],
-    globals: {
-        "ts-jest": {
-            isolatedModules: true,
-            diagnostics: false,
-        },
-    },
 };
 
 export = config;

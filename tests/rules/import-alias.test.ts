@@ -27,6 +27,7 @@ const mockLoadTsconfig = mocked(loadTsconfig);
 const mockExistsSync = mocked(existsSync);
 const mockReaddirSync = mocked(readdirSync);
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 import path = require("path"); // object import required for overwriting
 jest.mock("path", () => {
     // path must be redefined as object so we can overwrite it
@@ -46,8 +47,11 @@ jest.mock("path", () => {
 });
 
 const ruleTester = new RuleTester({
-    parserOptions: { ecmaVersion: 2015, sourceType: "module" },
+    languageOptions: {
+        parserOptions: { ecmaVersion: 2015, sourceType: "module" },
+    },
 });
+
 const cwd = process.cwd();
 
 const projectDirPart = cwd;

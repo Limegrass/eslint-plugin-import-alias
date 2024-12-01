@@ -266,7 +266,6 @@ const importAliasRule: Rule.RuleModule = {
             category: "Suggestions",
             recommended: true,
             url: "https://github.com/limegrass/eslint-plugin-import-alias/blob/HEAD/docs/rules/import-alias.md",
-            suggestion: true,
         },
         fixable: "code",
         schema: [
@@ -276,6 +275,7 @@ const importAliasRule: Rule.RuleModule = {
             },
         ],
         type: "suggestion",
+        hasSuggestions: true,
     },
 
     create: (context: Rule.RuleContext) => {
@@ -294,9 +294,9 @@ const importAliasRule: Rule.RuleModule = {
          * We can also otherwise resolve the tsconfig/jsconfig from the dirname(filepath),
          * which tsconfig-paths will attempt automatically for `tsconfig.json` and `jsconfig.json`
          */
-        const cwd = context.getCwd();
+        const cwd = context.cwd;
 
-        const filepath = resolve(context.getFilename());
+        const filepath = resolve(context.filename);
         const absoluteDir = dirname(filepath);
 
         if (!existsSync(absoluteDir)) {
@@ -379,7 +379,7 @@ const importAliasRule: Rule.RuleModule = {
                     moduleExists = dirContents.some((filename) => {
                         return parse(filename).name === moduleName;
                     });
-                } catch (_) {
+                } catch {
                     // module does not exist, do nothing as it is probably a dependency import
                 }
 
