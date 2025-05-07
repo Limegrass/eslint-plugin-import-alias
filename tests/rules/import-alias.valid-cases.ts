@@ -307,6 +307,20 @@ export function getValidTestCaseParams(
                 },
             ],
         },
+
+        {
+            description:
+                "alias with same value as baseUrl resolved import when !isAllowBaseUrlResolvedImport",
+            sourceFilePath: "src/code.ts",
+            import: {
+                input: `same-as-base-url-path/${IMPORTED_MODULE_NAME}`,
+            },
+            options: [
+                {
+                    isAllowBaseUrlResolvedImport: false,
+                },
+            ],
+        },
     ];
 
     return baseParams.map((params) => ({

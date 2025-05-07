@@ -397,15 +397,17 @@ const importAliasRule: Rule.RuleModule = {
                                 aliasConfig.alias,
                             ),
                         );
-                        return {
-                            message: `import ${importModuleName} can be written as ${suggestedPathImport}`,
-                            fix: (fixer: Rule.RuleFixer) => {
-                                return fixer.replaceTextRange(
-                                    quotelessRange,
-                                    suggestedPathImport,
-                                );
-                            },
-                        };
+                        if (suggestedPathImport !== importModuleName) {
+                            return {
+                                message: `import ${importModuleName} can be written as ${suggestedPathImport}`,
+                                fix: (fixer: Rule.RuleFixer) => {
+                                    return fixer.replaceTextRange(
+                                        quotelessRange,
+                                        suggestedPathImport,
+                                    );
+                                },
+                            };
+                        }
                     } else {
                         return {
                             message: `import ${importModuleName} is resolved from the TSConfig base URL without a path alias`,

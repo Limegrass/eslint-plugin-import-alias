@@ -55,5 +55,14 @@ export function getMockAliasConfig(
                 ),
             },
         },
+        {
+            alias: "same-as-base-url-path",
+            path: {
+                absolute: pathModule[platform].join(
+                    projectDir,
+                    "same-as-base-url-path",
+                ),
+            },
+        },
     ];
 }
