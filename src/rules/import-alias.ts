@@ -181,6 +181,11 @@ export type ImportAliasOptions = {
     aliasImportFunctions: string[];
     /** An array defining which paths can be allowed to used relative imports within it to defined depths. */
     relativeImportOverrides?: RelativeImportConfig[];
+    /**
+     * A boolean which determines whether you would like to allow absolute path module resolution
+     * through TSConfig's baseUrl alone. When set to false, absolute imports that does not use an
+     * associated path assignment will be considered invalid by this rule. Defaults to `true`
+     */
     isAllowBaseUrlResolvedImport: boolean;
 };
 
