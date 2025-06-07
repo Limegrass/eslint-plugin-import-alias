@@ -153,3 +153,60 @@ With a configuration like `{ pattern: "index\\.(ts|js)$" depth: 0 }`
 
 If a file matches by both patterns and paths, the maximum depth allowed is simply
 the largest of all matched overrides.
+
+### Configuring TSConfig's `baseUrl`-based resolution
+
+By default, TypeScript can resolve your modules based off absolute paths from
+the `baseUrl` defined in `tsconfig.json`. This means that if your TSConfig looks like
+
+```jsonc
+{
+    // ...
+    "compilerOptions": {
+        // ...
+        "baseUrl": ".",
+        "paths": {
+            "#src/*": ["src/*"],
+        },
+    },
+}
+```
+
+then when trying to import a file `src/potato.ts`
+
+```typescript
+import { Potato } from "src/potato"; // valid as it is resolved through TypeScript's baseUrl as `./src/potato`
+import { Potato } from "#src/potato"; // also valid as it uses a defined path to resolve it
+```
+
+You can choose whether or not these types of absolute paths which do not use an
+alias are acceptable in your project by configuring the `isAllowBaseUrlResolvedImport`
+plug-in option for this rule.
+
+```jsonc
+{
+    // ...
+    "rules": {
+        // ...
+        "@limegrass/import-alias/import-alias": [
+            "error",
+            {
+                "isAllowBaseUrlResolvedImport": false,
+            },
+        ],
+    },
+}
+```
+
+This value is `false` by default in the recommended config to encourage being as explicit
+as possible with path definitions. When this value is set to `false`,
+the path defined through the `baseUrl` is not considered valid.
+
+```typescript
+import { Potato } from "src/potato"; // now invalid
+import { Potato } from "#src/potato"; // valid as expected
+```
+
+While another suggestion could be to assign no paths and use only the `baseUrl`-resolved paths;
+this does not currently function when this is the case. If this is your preference and this is
+not yet implemented, feel free to file a new issue.
