@@ -36,9 +36,7 @@ function isPermittedRelativeImport(
     ).length;
     const relativeFilepath = relative(projectBaseDir, filepath);
 
-    const configs = [...relativeImportOverrides];
-    configs.sort((a, b) => b.depth - a.depth); // rank depth descending
-    for (const config of configs) {
+    for (const config of relativeImportOverrides) {
         if (
             ("path" in config && filepath.includes(resolve(config.path))) ||
             ("pattern" in config &&
@@ -320,6 +318,10 @@ const importAliasRule: Rule.RuleModule = {
             isAllowBaseUrlResolvedImport = true,
         }: ImportAliasOptions = context.options[0] || {}; // No idea what the other array values are
 
+        const sortedRelativeImportOverrides = [...relativeImportOverrides].sort(
+            (a, b) => b.depth - a.depth,
+        ); // rank depth descending
+
         let projectBaseDir: string;
         let aliasesResult: AliasConfig[];
         try {
@@ -344,7 +346,7 @@ const importAliasRule: Rule.RuleModule = {
             if (
                 isPermittedRelativeImport(
                     importModuleName,
-                    relativeImportOverrides,
+                    sortedRelativeImportOverrides,
                     filepath,
                     projectBaseDir,
                 )
