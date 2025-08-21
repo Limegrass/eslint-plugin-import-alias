@@ -48,18 +48,28 @@ function isPermittedRelativeImport(
     return false;
 }
 
+function getCurrentAliasConfig(
+    importModuleName: string,
+    /**
+     * We want to find the most specific alias that they might currently be using.
+     * Dependent on sorted AliasConfigs to find the more specific ones as priority.
+     * TODO: create and accept a more specific class so sorting is not implicit
+     */
+    aliasConfigs: AliasConfig[],
+) {
+    return aliasConfigs.find(
+        ({ alias }) =>
+            importModuleName === alias || // is importing exactly from the aliased module
+            importModuleName.startsWith(`${alias}/`), // trailing slash is needed to avoid partial matches
+    );
+}
+
 function getAliasSuggestion(
     importModuleName: string,
     aliasConfigs: AliasConfig[],
     absoluteDir: string,
+    currentAliasConfig: AliasConfig | undefined,
 ) {
-    const currentAliasConfig: AliasConfig | undefined = aliasConfigs.find(
-        ({ alias }) => {
-            const [baseModulePath] = importModuleName.split("/");
-            return baseModulePath === alias;
-        },
-    );
-
     let absoluteModulePath: string | undefined = undefined;
     if (importModuleName.trim().charAt(0) === ".") {
         absoluteModulePath = joinPath(absoluteDir, importModuleName);
@@ -336,6 +346,11 @@ const importAliasRule: Rule.RuleModule = {
             throw error;
         }
 
+        // prioritize more specific (longer) aliases from the config to the most accurate currently used alias
+        const aliasLengthSortedAliasConfig = [...aliasesResult].sort(
+            (a, b) => b.alias.length - a.alias.length,
+        );
+
         const getReportDescriptor = (
             [moduleStart, moduleEnd]: [number, number],
             importModuleName: string,
@@ -354,10 +369,17 @@ const importAliasRule: Rule.RuleModule = {
                 return undefined;
             }
 
+            const currentAliasConfig: AliasConfig | undefined =
+                getCurrentAliasConfig(
+                    importModuleName,
+                    aliasLengthSortedAliasConfig,
+                );
+
             const aliasSuggestion = getAliasSuggestion(
                 importModuleName,
-                aliasesResult,
+                aliasesResult, // preserve original priority for equivalent aliases
                 absoluteDir,
+                currentAliasConfig,
             );
 
             if (aliasSuggestion) {

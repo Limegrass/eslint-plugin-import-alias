@@ -33,11 +33,40 @@ export function getInvalidTestCaseParams(
         },
 
         {
+            description:
+                "alias with slash - unaliased sibling import from aliased path",
+            sourceFilePath: "slash/code.ts",
+            import: {
+                input: `./${IMPORTED_MODULE_NAME}`,
+                output: `@/slash/${IMPORTED_MODULE_NAME}`,
+            },
+        },
+
+        {
+            description: "at symbol alias - relative unaliased import",
+            sourceFilePath: "at-symbol/code.ts",
+            import: {
+                input: `./${IMPORTED_MODULE_NAME}`,
+                output: `@/${IMPORTED_MODULE_NAME}`,
+            },
+        },
+
+        {
             description: "unaliased parent import from aliased path",
             sourceFilePath: "src/sub-directory/code.ts",
             import: {
                 input: `../${IMPORTED_MODULE_NAME}`,
                 output: `#src/${IMPORTED_MODULE_NAME}`,
+            },
+        },
+
+        {
+            description:
+                "alias with slash - unaliased parent import from aliased path",
+            sourceFilePath: "slash/sub-directory/code.ts",
+            import: {
+                input: `../${IMPORTED_MODULE_NAME}`,
+                output: `@/slash/${IMPORTED_MODULE_NAME}`,
             },
         },
 
@@ -51,11 +80,30 @@ export function getInvalidTestCaseParams(
         },
 
         {
+            description:
+                "alias with slash - aliased but has more specific alias",
+            sourceFilePath: "slash/sub-directory/code.ts",
+            import: {
+                input: `@/slash/sub-directory/${IMPORTED_MODULE_NAME}`,
+                output: `@/slash/sub/${IMPORTED_MODULE_NAME}`,
+            },
+        },
+
+        {
             description: "unaliased sub-directory import",
             sourceFilePath: "src/code.ts",
             import: {
                 input: `./sub-directory/${IMPORTED_MODULE_NAME}`,
                 output: `#sub-directory/${IMPORTED_MODULE_NAME}`,
+            },
+        },
+
+        {
+            description: "alias with slash - unaliased sub-directory import",
+            sourceFilePath: "slash/code.ts",
+            import: {
+                input: `./unaliased-sub-directory/${IMPORTED_MODULE_NAME}`,
+                output: `@/slash/unaliased-sub-directory/${IMPORTED_MODULE_NAME}`,
             },
         },
 

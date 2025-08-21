@@ -31,10 +31,26 @@ export function getValidTestCaseParams(
         },
 
         {
+            description: "alias with slash - aliased source import",
+            sourceFilePath: "slash/code.ts",
+            import: {
+                input: `@/slash/sub/${IMPORTED_MODULE_NAME}`,
+            },
+        },
+
+        {
             description: "aliased sub-directory import",
             sourceFilePath: "src/code.ts",
             import: {
                 input: `#sub-directory/${IMPORTED_MODULE_NAME}`,
+            },
+        },
+
+        {
+            description: "alias with slash - sub-directory import",
+            sourceFilePath: "slash/code.ts",
+            import: {
+                input: `@/slash/unaliased-sub-directory/${IMPORTED_MODULE_NAME}`,
             },
         },
 

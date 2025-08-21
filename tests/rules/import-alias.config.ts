@@ -64,5 +64,27 @@ export function getMockAliasConfig(
                 ),
             },
         },
+        {
+            alias: "@",
+            path: {
+                absolute: pathModule[platform].join(projectDir, "at-symbol"),
+            },
+        },
+        {
+            alias: "@/slash",
+            path: {
+                absolute: pathModule[platform].join(projectDir, "slash"),
+            },
+        },
+        {
+            alias: "@/slash/sub",
+            path: {
+                absolute: pathModule[platform].join(
+                    projectDir,
+                    "slash",
+                    "sub-directory",
+                ),
+            },
+        },
     ];
 }
