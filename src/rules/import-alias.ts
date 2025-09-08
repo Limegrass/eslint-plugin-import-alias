@@ -324,8 +324,10 @@ const importAliasRule: Rule.RuleModule = {
             aliasConfigPath,
             aliasImportFunctions = schemaProperties.aliasImportFunctions
                 .default as string[],
-            relativeImportOverrides = [],
-            isAllowBaseUrlResolvedImport = true,
+            relativeImportOverrides = schemaProperties.relativeImportOverrides
+                .default as unknown as RelativeImportConfig[],
+            isAllowBaseUrlResolvedImport = schemaProperties
+                .isAllowBaseUrlResolvedImport.default as boolean,
         }: ImportAliasOptions = context.options[0] || {}; // No idea what the other array values are
 
         const sortedRelativeImportOverrides = [...relativeImportOverrides].sort(
