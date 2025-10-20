@@ -1,6 +1,6 @@
 # @limegrass/eslint-plugin-import-alias
 
-Encourage use of defined aliases in TSConfig/JSConfig through ESLint.
+Enforce use of defined aliases in TSConfig/JSConfig through ESLint.
 
 ## Why
 

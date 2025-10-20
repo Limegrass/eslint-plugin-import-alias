@@ -1,4 +1,4 @@
-# import-alias/import-alias: Encourage use of defined aliases
+# import-alias/import-alias: Enforce use of defined aliases
 
 ## Rule Details
 
