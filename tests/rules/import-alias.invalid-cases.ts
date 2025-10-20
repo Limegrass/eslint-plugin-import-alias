@@ -108,6 +108,132 @@ export function getInvalidTestCaseParams(
         },
 
         {
+            description:
+                "aliased path that should be relative when isRelativeImportOverridesEnforced is true with path override",
+            sourceFilePath: "src/sub-directory/code.ts",
+            import: {
+                input: `#sub-directory/${IMPORTED_MODULE_NAME}`,
+                output: `./${IMPORTED_MODULE_NAME}`,
+            },
+            options: [
+                {
+                    isRelativeImportOverridesEnforced: true,
+                    relativeImportOverrides: [
+                        {
+                            path: "src",
+                            depth: 0,
+                        },
+                    ],
+                },
+            ],
+        },
+
+        {
+            description:
+                "aliased parent path that should be relative when isRelativeImportOverridesEnforced is true with path override",
+            sourceFilePath: "src/sub-directory/code.ts",
+            import: {
+                input: `#src/${IMPORTED_MODULE_NAME}`,
+                output: `../${IMPORTED_MODULE_NAME}`,
+            },
+            options: [
+                {
+                    isRelativeImportOverridesEnforced: true,
+                    relativeImportOverrides: [
+                        {
+                            path: "src",
+                            depth: 1,
+                        },
+                    ],
+                },
+            ],
+        },
+
+        {
+            description:
+                "aliased path that should be relative when isRelativeImportOverridesEnforced is true with pattern override",
+            sourceFilePath: "src/sub-directory/code.ts",
+            import: {
+                input: `#sub-directory/${IMPORTED_MODULE_NAME}`,
+                output: `./${IMPORTED_MODULE_NAME}`,
+            },
+            options: [
+                {
+                    isRelativeImportOverridesEnforced: true,
+                    relativeImportOverrides: [
+                        {
+                            pattern: "code.ts$",
+                            depth: 0,
+                        },
+                    ],
+                },
+            ],
+        },
+
+        {
+            description:
+                "aliased parent path that should be relative when isRelativeImportOverridesEnforced is true with pattern override",
+            sourceFilePath: "src/sub-directory/code.ts",
+            import: {
+                input: `#src/${IMPORTED_MODULE_NAME}`,
+                output: `../${IMPORTED_MODULE_NAME}`,
+            },
+            options: [
+                {
+                    isRelativeImportOverridesEnforced: true,
+                    relativeImportOverrides: [
+                        {
+                            pattern: "code.ts$",
+                            depth: 1,
+                        },
+                    ],
+                },
+            ],
+        },
+
+        {
+            description:
+                "baseUrl path that should be relative when isRelativeImportOverridesEnforced is true with pattern override",
+            sourceFilePath: "src/sub-directory/code.ts",
+            import: {
+                input: `src/sub-directory/${IMPORTED_MODULE_NAME}`,
+                output: `./${IMPORTED_MODULE_NAME}`,
+            },
+            options: [
+                {
+                    isRelativeImportOverridesEnforced: true,
+                    relativeImportOverrides: [
+                        {
+                            pattern: "code.ts$",
+                            depth: 1,
+                        },
+                    ],
+                },
+            ],
+        },
+
+        {
+            description:
+                "relative path that should be absolute when isRelativeImportOverridesEnforced is true with pattern override",
+            sourceFilePath: "src/sub-directory/code.ts",
+            import: {
+                input: `../deep/sub/dir/${IMPORTED_MODULE_NAME}`,
+                output: `#src/deep/sub/dir/${IMPORTED_MODULE_NAME}`,
+            },
+            options: [
+                {
+                    isRelativeImportOverridesEnforced: true,
+                    relativeImportOverrides: [
+                        {
+                            pattern: "src/sub-directory",
+                            depth: 0,
+                        },
+                    ],
+                },
+            ],
+        },
+
+        {
             description: "global relative override insufficient depth",
             sourceFilePath: "src/sub-directory/code.ts",
             import: {

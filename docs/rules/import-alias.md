@@ -154,6 +154,40 @@ With a configuration like `{ pattern: "index\\.(ts|js)$" depth: 0 }`
 If a file matches by both patterns and paths, the maximum depth allowed is simply
 the largest of all matched overrides.
 
+### Enforcing relative imports in specified paths/patterns
+
+The `relativeImportOverrides` option only permits relative
+imports to be used for the configured overrides.
+Use the `isRelativeImportOverridesEnforced` option to require
+matches import using relative paths when possible.
+
+As an example, the configuration below will require relative imports
+for any sibling or their nested descendent from within `src/components`
+
+```jsonc
+{
+    // ...
+    "rules": {
+        // ...
+        "@limegrass/import-alias/import-alias": [
+            "error",
+            {
+                "isRelativeImportOverridesEnforced": true,
+                "relativeImportOverrides": [
+                    { "path": "src/components", "depth": 0 },
+                ],
+            },
+        ],
+    },
+}
+```
+
+```ts
+// ./src/components/code.ts
+import { Potato } from "#src/potato"; // valid
+import { garbage } from "#src/components/garbage"; // invalid! - prefers ./garbage
+```
+
 ### Configuring TSConfig's `baseUrl`-based resolution
 
 By default, TypeScript can resolve your modules based off absolute paths from

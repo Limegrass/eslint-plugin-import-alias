@@ -18,6 +18,48 @@ import {
 } from "path";
 import slash from "slash";
 
+/**
+ * @param filepath - The absolute path of the file
+ * @param config - The relative import override configuration
+ * @param relativeFilepath - The file path relative to the project base directory
+ * @returns True if the file matches the configuration
+ */
+function isFileMatchingOverrideConfig(
+    filepath: string,
+    config: RelativeImportConfig,
+    relativeFilepath: string,
+): boolean {
+    return (
+        ("path" in config && filepath.includes(resolve(config.path))) ||
+        ("pattern" in config &&
+            new RegExp(config.pattern).test(relativeFilepath))
+    );
+}
+
+function isModuleExists(absoluteModulePath: string, importModuleName: string) {
+    try {
+        const dirContents = readdirSync(dirname(absoluteModulePath));
+        const moduleName = importModuleName.split("/").pop();
+        return dirContents.some((filename) => {
+            return parse(filename).name === moduleName;
+        });
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * @param relativeDepth - The relative depth (number of "../" segments)
+ * @param config - The relative import override configuration
+ * @returns True if the relative depth is within the permitted limit
+ */
+function isWithinPermittedDepth(
+    relativeDepth: number,
+    config: RelativeImportConfig,
+): boolean {
+    return relativeDepth <= config.depth;
+}
+
 function isPermittedRelativeImport(
     importModuleName: string,
     relativeImportOverrides: RelativeImportConfig[],
@@ -37,12 +79,8 @@ function isPermittedRelativeImport(
     const relativeFilepath = relative(projectBaseDir, filepath);
 
     for (const config of relativeImportOverrides) {
-        if (
-            ("path" in config && filepath.includes(resolve(config.path))) ||
-            ("pattern" in config &&
-                new RegExp(config.pattern).test(relativeFilepath))
-        ) {
-            return relativeDepth <= config.depth;
+        if (isFileMatchingOverrideConfig(filepath, config, relativeFilepath)) {
+            return isWithinPermittedDepth(relativeDepth, config);
         }
     }
     return false;
@@ -185,6 +223,12 @@ type RelativeImportConfig = RelativePathConfig | RelativeGlobConfig;
 
 export type ImportAliasOptions = {
     aliasConfigPath?: string;
+    /**
+     * A boolean which determines whether relative imports are required
+     * within the paths and patterns defined in relativeImportOverrides.
+     * When set to true, aliases will be converted to relative imports within these paths.
+     */
+    isRelativeImportOverridesEnforced?: boolean;
     // TODO: A fuller solution might need a property for the position, but not sure if needed
     aliasImportFunctions: string[];
     /** An array defining which paths can be allowed to used relative imports within it to defined depths. */
@@ -204,6 +248,12 @@ const schemaProperties: Record<keyof ImportAliasOptions, JSONSchema4> = {
     aliasConfigPath: {
         description: "Alternative path to look for a TSConfig/JSConfig",
         type: "string",
+    },
+    isRelativeImportOverridesEnforced: {
+        type: "boolean",
+        description:
+            "When set to true, relative imports are enforced within the paths and patterns defined in relativeImportOverrides.",
+        default: false,
     },
     aliasImportFunctions: {
         type: "array",
@@ -321,6 +371,8 @@ const importAliasRule: Rule.RuleModule = {
         }
 
         const {
+            isRelativeImportOverridesEnforced = schemaProperties
+                .isRelativeImportOverridesEnforced.default as boolean,
             aliasConfigPath,
             aliasImportFunctions = schemaProperties.aliasImportFunctions
                 .default as string[],
@@ -353,6 +405,48 @@ const importAliasRule: Rule.RuleModule = {
             (a, b) => b.alias.length - a.alias.length,
         );
 
+        function shouldUseRelativeImport(
+            filepath: string,
+            absoluteModulePath: string,
+            projectBaseDir: string,
+        ) {
+            const relativeFilepath = relative(projectBaseDir, filepath);
+
+            for (const config of relativeImportOverrides) {
+                if (
+                    isFileMatchingOverrideConfig(
+                        filepath,
+                        config,
+                        relativeFilepath,
+                    )
+                ) {
+                    const importDirname = dirname(filepath);
+                    const relativeToImport = relative(
+                        importDirname,
+                        absoluteModulePath,
+                    );
+                    const relativeDepth = relativeToImport
+                        .split(pathSep)
+                        .filter((part) => part === "..").length;
+                    return isWithinPermittedDepth(relativeDepth, config);
+                }
+            }
+
+            return false;
+        }
+
+        function getRelativeImportPath(
+            absoluteDir: string,
+            absoluteModulePath: string,
+        ) {
+            const relativePath = slash(
+                relative(absoluteDir, absoluteModulePath),
+            );
+            return relativePath.startsWith(".")
+                ? relativePath
+                : `./${relativePath}`;
+        }
+
         const getReportDescriptor = (
             [moduleStart, moduleEnd]: [number, number],
             importModuleName: string,
@@ -369,6 +463,55 @@ const importAliasRule: Rule.RuleModule = {
                 )
             ) {
                 return undefined;
+            }
+
+            const isEnforceRelativeDesired =
+                isRelativeImportOverridesEnforced &&
+                relativeImportOverrides.length !== 0;
+            const isNotRelative =
+                importModuleName.length > 0 && importModuleName[0] !== ".";
+            if (isEnforceRelativeDesired && isNotRelative) {
+                const currentAliasConfig = getCurrentAliasConfig(
+                    importModuleName,
+                    aliasLengthSortedAliasConfig,
+                );
+
+                const absoluteModulePath = currentAliasConfig
+                    ? importModuleName
+                          .replace(
+                              currentAliasConfig.alias,
+                              currentAliasConfig.path.absolute,
+                          )
+                          .replace(/\//g, pathSep)
+                    : joinPath(projectBaseDir, importModuleName);
+
+                const moduleExists = isModuleExists(
+                    absoluteModulePath,
+                    importModuleName,
+                );
+
+                if (
+                    moduleExists &&
+                    shouldUseRelativeImport(
+                        filepath,
+                        absoluteModulePath,
+                        projectBaseDir,
+                    )
+                ) {
+                    const relativePath = getRelativeImportPath(
+                        absoluteDir,
+                        absoluteModulePath,
+                    );
+                    return {
+                        message: `import ${importModuleName} should use relative path: ${relativePath}`,
+                        fix: (fixer: Rule.RuleFixer) => {
+                            return fixer.replaceTextRange(
+                                quotelessRange,
+                                relativePath,
+                            );
+                        },
+                    };
+                }
             }
 
             const currentAliasConfig: AliasConfig | undefined =
