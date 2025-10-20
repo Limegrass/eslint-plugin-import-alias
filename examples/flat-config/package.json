@@ -1,0 +1,20 @@
+{
+    "main": "build/index.js",
+    "scripts": {
+        "build": "tsc"
+    },
+    "devDependencies": {
+        "@eslint/compat": "^1",
+        "@types/node": "^20",
+        "typescript-eslint": "^8",
+        "eslint": "^9",
+        "eslint-import-resolver-typescript": "^3",
+        "@limegrass/eslint-plugin-import-alias": "file:../../build",
+        "typescript": "^5"
+    },
+    "name": "@limegrass/eslint-plugin-import-alias.example.flat-config",
+    "version": "1.0.0",
+    "description": "Basic flat config example usage of @limegrass/eslint-plugin-import-alias",
+    "author": "limegrass",
+    "license": "MIT"
+}

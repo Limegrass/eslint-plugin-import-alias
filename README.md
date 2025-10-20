@@ -24,8 +24,9 @@ settings. See the [rules documentation][docs-import-alias] for more detail.
 
 ## Configuration
 
-The following is the most basic configuration.
-Check the [rules documentation][docs-import-alias] for further configuration.
+This plugin supports multiple configuration parameters which can affect how it handles
+relative paths, base URLs, and more. Check the [rules documentation][docs-import-alias]
+and [example configurations](./examples) for more detailed configurations.
 
 ```jsonc
 // .eslintrc
@@ -48,5 +49,10 @@ The configuration above is also equivalent to
     ],
 }
 ```
+
+Note that while the above is for the deprecated `.eslintrc` format,
+this package does support ESLint@^9 and its flat config format.
+
+See [the flat-config example](./examples/flat-config/) for details.
 
 [docs-import-alias]: docs/rules/import-alias.md
