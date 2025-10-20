@@ -60,7 +60,7 @@
         "type": "git"
     },
     "name": "@limegrass/eslint-plugin-import-alias",
-    "version": "1.5.2",
+    "version": "1.6.0",
     "description": "Rewrite imports to TSConfig aliases",
     "author": "Limegrass",
     "license": "MIT"
