@@ -6,12 +6,10 @@ Given the following `tsconfig.json`
 
 ```jsonc
 {
-    // ...
     "compilerOptions": {
-        // ...
         "paths": {
-            "#src/*": ["src/*"],
-            "#rules/*": ["src/rules/*"],
+            "#src/*": ["./src/*"],
+            "#rules/*": ["./src/rules/*"],
         },
     },
 }
@@ -188,33 +186,22 @@ import { Potato } from "#src/potato"; // valid
 import { garbage } from "#src/components/garbage"; // invalid! - prefers ./garbage
 ```
 
-### Configuring TSConfig's `baseUrl`-based resolution
+### Configuring implicit path resolution
 
-By default, TypeScript can resolve your modules based off absolute paths from
-the `baseUrl` defined in `tsconfig.json`. This means that if your TSConfig looks like
+TypeScript can resolve modules using absolute paths relative to a base directory.
+`paths` values with relative prefixes like `"./"` resolve relative
+to the TSConfig file's directory.
 
-```jsonc
-{
-    // ...
-    "compilerOptions": {
-        // ...
-        "baseUrl": ".",
-        "paths": {
-            "#src/*": ["src/*"],
-        },
-    },
-}
-```
-
-then when trying to import a file `src/potato.ts`
+For example, given a TSConfig like the one above,
+importing a file at `src/potato.ts` could look like
 
 ```typescript
-import { Potato } from "src/potato"; // valid as it is resolved through TypeScript's baseUrl as `./src/potato`
+import { Potato } from "src/potato"; // valid - resolved implicitly from the base directory
 import { Potato } from "#src/potato"; // also valid as it uses a defined path to resolve it
 ```
 
 You can choose whether or not these types of absolute paths which do not use an
-alias are acceptable in your project by configuring the `isAllowBaseUrlResolvedImport`
+alias are acceptable in your project by configuring the `isAllowImplicitPathResolution`
 plug-in option for this rule.
 
 ```jsonc
@@ -225,22 +212,18 @@ plug-in option for this rule.
         "@limegrass/import-alias/import-alias": [
             "error",
             {
-                "isAllowBaseUrlResolvedImport": false,
+                "isAllowImplicitPathResolution": false,
             },
         ],
     },
 }
 ```
 
-This value is `false` by default in the recommended config to encourage being as explicit
-as possible with path definitions. When this value is set to `false`,
-the path defined through the `baseUrl` is not considered valid.
+This value is `false` by default in the recommended config to encourage being as
+explicit as possible with path definitions. When this value is set to `false`,
+implicitly resolved paths are not considered valid.
 
 ```typescript
 import { Potato } from "src/potato"; // now invalid
 import { Potato } from "#src/potato"; // valid as expected
 ```
-
-While another suggestion could be to assign no paths and use only the `baseUrl`-resolved paths;
-this does not currently function when this is the case. If this is your preference and this is
-not yet implemented, feel free to file a new issue.

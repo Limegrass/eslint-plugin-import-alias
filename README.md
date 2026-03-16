@@ -25,7 +25,7 @@ settings. See the [rules documentation][docs-import-alias] for more detail.
 ## Configuration
 
 This plugin supports multiple configuration parameters which can affect how it handles
-relative paths, base URLs, and more. Check the [rules documentation][docs-import-alias]
+relative paths, implicit path resolution, and more. Check the [rules documentation][docs-import-alias]
 and [example configurations](./examples) for more detailed configurations.
 
 ```jsonc

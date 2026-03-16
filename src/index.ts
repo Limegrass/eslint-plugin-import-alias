@@ -12,7 +12,7 @@ export const configs: Record<string, ESLint.ConfigData> = {
             "@limegrass/import-alias/import-alias": [
                 "error",
                 {
-                    isAllowBaseUrlResolvedImport: false,
+                    isAllowImplicitPathResolution: false,
                 },
             ],
         },

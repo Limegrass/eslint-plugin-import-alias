@@ -43,7 +43,9 @@ function loadTsconfig(
 
     if (config.resultType !== "success") {
         throw new Error(
-            `validate tsconfig or jsconfig provided and ensure compilerOptions.baseUrl is set: ${config.message}`,
+            `Could not load alias configuration.` +
+                ` Ensure a valid tsconfig.json or jsconfig.json exists` +
+                ` with compilerOptions.paths defined: ${config.message}`,
         );
     }
 

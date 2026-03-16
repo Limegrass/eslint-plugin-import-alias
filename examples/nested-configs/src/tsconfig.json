@@ -1,7 +1,6 @@
 {
     "extends": "../tsconfig.json",
     "compilerOptions": {
-        "baseUrl": ".",
         "declaration": true,
         "esModuleInterop": true,
         "outDir": "./build",

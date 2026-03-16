@@ -69,7 +69,6 @@ function runTests(platform: "win32" | "posix") {
         mockReaddirSync.mockImplementation(mockReaddir as typeof readdirSync);
 
         mockLoadTsconfig.mockReturnValue({
-            baseUrl: ".",
             configFileAbsolutePath: path[platform].join(
                 projectDir,
                 "tsconfig.json",

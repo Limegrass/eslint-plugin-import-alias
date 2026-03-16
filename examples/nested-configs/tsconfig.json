@@ -2,13 +2,12 @@
     "exclude": ["node_modules/*", "public/*"],
     "include": ["src"],
     "compilerOptions": {
-        "baseUrl": ".",
         "declaration": true,
         "esModuleInterop": true,
         "outDir": "./build",
         "paths": {
-            "#src/*": ["src/*"],
-            "#root/*": ["*"]
+            "#src/*": ["./src/*"],
+            "#root/*": ["./*"]
         },
         "resolveJsonModule": true,
         "strictNullChecks": true

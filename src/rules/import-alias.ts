@@ -234,11 +234,12 @@ export type ImportAliasOptions = {
     /** An array defining which paths can be allowed to used relative imports within it to defined depths. */
     relativeImportOverrides?: RelativeImportConfig[];
     /**
-     * A boolean which determines whether you would like to allow absolute path module resolution
-     * through TSConfig's baseUrl alone. When set to false, absolute imports that does not use an
-     * associated path assignment will be considered invalid by this rule. Defaults to `true`
+     * Whether to allow imports that resolve implicitly from the project base directory
+     * without a defined path alias. The base directory is determined by the TSConfig file's directory.
+     * When set to false, such imports will be considered invalid by this rule.
+     * Defaults to `true`.
      */
-    isAllowBaseUrlResolvedImport: boolean;
+    isAllowImplicitPathResolution: boolean;
 };
 
 /**
@@ -252,7 +253,8 @@ const schemaProperties: Record<keyof ImportAliasOptions, JSONSchema4> = {
     isRelativeImportOverridesEnforced: {
         type: "boolean",
         description:
-            "When set to true, relative imports are enforced within the paths and patterns defined in relativeImportOverrides.",
+            "When set to true, relative imports are enforced within the" +
+            " paths and patterns defined in relativeImportOverrides.",
         default: false,
     },
     aliasImportFunctions: {
@@ -310,12 +312,14 @@ const schemaProperties: Record<keyof ImportAliasOptions, JSONSchema4> = {
             ],
         },
     },
-    isAllowBaseUrlResolvedImport: {
+    isAllowImplicitPathResolution: {
         type: "boolean",
         description: [
-            "A boolean which determines whether you would like to allow absolute path module resolution",
-            "through TSConfig's baseUrl alone. When set to false, absolute imports that does not use an",
-            "associated path assignment will be considered invalid by this rule. Defaults to `true`",
+            "Whether to allow imports that resolve implicitly from the",
+            " project base directory without a defined path alias.",
+            "The base directory is determined by the TSConfig file's directory.",
+            "When set to false, such imports will be considered invalid by this rule.",
+            "Defaults to `true`.",
         ].join(" "),
         default: true, // default true for backwards compatibility
     },
@@ -378,8 +382,8 @@ const importAliasRule: Rule.RuleModule = {
                 .default as string[],
             relativeImportOverrides = schemaProperties.relativeImportOverrides
                 .default as unknown as RelativeImportConfig[],
-            isAllowBaseUrlResolvedImport = schemaProperties
-                .isAllowBaseUrlResolvedImport.default as boolean,
+            isAllowImplicitPathResolution = schemaProperties
+                .isAllowImplicitPathResolution.default as boolean,
         }: ImportAliasOptions = context.options[0] || {}; // No idea what the other array values are
 
         const sortedRelativeImportOverrides = [...relativeImportOverrides].sort(
@@ -391,7 +395,14 @@ const importAliasRule: Rule.RuleModule = {
         try {
             const tsconfig = loadTsconfig(cwd, aliasConfigPath, filepath);
             const configDir = dirname(tsconfig.configFileAbsolutePath);
-            projectBaseDir = joinPath(configDir, tsconfig.baseUrl ?? "");
+
+            /**
+             * `baseUrl` support is kept for backwards compatibility.
+             * Fully deprecated in typescript\@6, but until that is released and well adopted,
+             * implicit support will be maintained.
+             */
+            const baseUrl = tsconfig.baseUrl ?? "";
+            projectBaseDir = joinPath(configDir, baseUrl);
             aliasesResult = loadAliasConfigs(tsconfig, projectBaseDir);
         } catch (error) {
             if (error instanceof Error) {
@@ -539,9 +550,9 @@ const importAliasRule: Rule.RuleModule = {
                 };
             }
 
-            // if no alias found, but user did not want to allow baseUrl resolved absolute imports
-            // check if it would exist as a baseUrl absolute import. If so, make suggestions.
-            if (!isAllowBaseUrlResolvedImport) {
+            // if no alias found, but user did not want to allow implicitly resolved absolute imports
+            // check if it would exist as an implicitly resolved import. If so, make suggestions.
+            if (!isAllowImplicitPathResolution) {
                 const joinedModulePath = joinPath(
                     projectBaseDir,
                     importModuleName,
@@ -584,7 +595,7 @@ const importAliasRule: Rule.RuleModule = {
                         }
                     } else {
                         return {
-                            message: `import ${importModuleName} is resolved from the TSConfig base URL without a path alias`,
+                            message: `import ${importModuleName} is implicitly resolved without a path alias`,
                         };
                     }
                 }

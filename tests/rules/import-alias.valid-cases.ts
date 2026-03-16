@@ -304,7 +304,7 @@ export function getValidTestCaseParams(
         },
 
         {
-            description: "absolute import by baseUrl resolved import",
+            description: "implicitly resolved absolute import",
             sourceFilePath: "src/code.ts",
             import: {
                 input: `src/${IMPORTED_MODULE_NAME}`,
@@ -312,28 +312,29 @@ export function getValidTestCaseParams(
         },
 
         {
-            description: "unknown import with !isAllowBaseUrlResolvedImport",
+            description:
+                "unknown import with implicit path resolution disabled",
             sourceFilePath: "src/code.ts",
             import: {
                 input: `${UNKNOWN_MODULE_PATH}`,
             },
             options: [
                 {
-                    isAllowBaseUrlResolvedImport: false,
+                    isAllowImplicitPathResolution: false,
                 },
             ],
         },
 
         {
             description:
-                "alias with same value as baseUrl resolved import when !isAllowBaseUrlResolvedImport",
+                "alias matching an implicitly resolved path when implicit path resolution is disabled",
             sourceFilePath: "src/code.ts",
             import: {
                 input: `same-as-base-url-path/${IMPORTED_MODULE_NAME}`,
             },
             options: [
                 {
-                    isAllowBaseUrlResolvedImport: false,
+                    isAllowImplicitPathResolution: false,
                 },
             ],
         },

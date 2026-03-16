@@ -193,7 +193,7 @@ export function getInvalidTestCaseParams(
 
         {
             description:
-                "baseUrl path that should be relative when isRelativeImportOverridesEnforced is true with pattern override",
+                "implicitly resolved path that should be relative when isRelativeImportOverridesEnforced is true with pattern override",
             sourceFilePath: "src/sub-directory/code.ts",
             import: {
                 input: `src/sub-directory/${IMPORTED_MODULE_NAME}`,
@@ -348,7 +348,7 @@ export function getInvalidTestCaseParams(
         },
 
         {
-            description: "baseUrl resolved module import when not allowed",
+            description: "implicitly resolved module import when not allowed",
             sourceFilePath: "src/code.ts",
             import: {
                 input: `src/sub-directory/${IMPORTED_MODULE_NAME}`,
@@ -356,14 +356,14 @@ export function getInvalidTestCaseParams(
             },
             options: [
                 {
-                    isAllowBaseUrlResolvedImport: false,
+                    isAllowImplicitPathResolution: false,
                 },
             ],
         },
 
         {
             description:
-                "baseUrl resolved module import when not allowed for existing file",
+                "implicitly resolved module import when not allowed for existing file",
             sourceFilePath: "src/code.ts",
             import: {
                 input: `known/${IMPORTED_MODULE_NAME}`,
@@ -371,14 +371,14 @@ export function getInvalidTestCaseParams(
             },
             options: [
                 {
-                    isAllowBaseUrlResolvedImport: false,
+                    isAllowImplicitPathResolution: false,
                 },
             ],
         },
 
         {
             description:
-                "isAllowBaseUrlResolvedImport is not hampered by relativeImportOverrides",
+                "isAllowImplicitPathResolution is not hampered by relativeImportOverrides",
             sourceFilePath: "src/code.ts",
             import: {
                 input: `src/${IMPORTED_MODULE_NAME}`,
@@ -386,7 +386,7 @@ export function getInvalidTestCaseParams(
             },
             options: [
                 {
-                    isAllowBaseUrlResolvedImport: false,
+                    isAllowImplicitPathResolution: false,
                     relativeImportOverrides: [
                         {
                             path: ".",
