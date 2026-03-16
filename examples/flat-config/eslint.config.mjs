@@ -1,25 +1,14 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import globals from "globals";
-import { fixupConfigRules } from "@eslint/compat";
-import { FlatCompat } from "@eslint/eslintrc";
 import tseslint from "typescript-eslint";
-import { defineConfig } from "eslint/config";
+import * as importAlias from "@limegrass/eslint-plugin-import-alias";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-});
-
-const config = defineConfig([
-    ...fixupConfigRules(
-        compat.extends("plugin:@limegrass/import-alias/recommended"),
-    ),
+const config = [
     {
         files: ["**/*.ts"],
+
         plugins: {
             "@typescript-eslint": tseslint.plugin,
+            "@limegrass/import-alias": importAlias,
         },
 
         languageOptions: {
@@ -33,6 +22,15 @@ const config = defineConfig([
             },
         },
 
+        rules: {
+            "@limegrass/import-alias/import-alias": [
+                "error",
+                {
+                    isAllowBaseUrlResolvedImport: false,
+                },
+            ],
+        },
+
         settings: {
             "import/parsers": {
                 "@typescript-eslint/parser": [".ts"],
@@ -42,6 +40,6 @@ const config = defineConfig([
             },
         },
     },
-]);
+];
 
 export default config;
